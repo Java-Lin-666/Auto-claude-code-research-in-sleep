@@ -1,0 +1,4 @@
+# Install the server-compatible torch/torchvision CUDA wheels first; see README.md.
+numpy==1.26.4
+Pillow==10.4.0
+pytest==8.2.2
