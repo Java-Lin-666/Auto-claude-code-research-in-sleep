@@ -1,0 +1,47 @@
+{
+  "checks": {
+    "anchor_coverage": true,
+    "artifact_and_pairing": true,
+    "eligible_steps": true,
+    "no_bacc_collapse": true,
+    "observed_nonzero_modification": true,
+    "positive_early_signal": true,
+    "trigger_fraction": true
+  },
+  "gate": "MINIMAL-C10-100-20K",
+  "mechanism": {
+    "anchor_coverage": 0.999448289698064,
+    "conflict_or_domination_fraction": 0.9473076730064737,
+    "eligible_steps": 19927,
+    "nonzero_gradient_modification_steps": 16568,
+    "predicted_head_occurrence_steps": 19938
+  },
+  "paired_runs": {
+    "fixmatch": "D:\\Auto-claude-code-research-in-sleep\\gradvax_experiments\\results\\pilot-c10-100-fixmatch-20000step-seed0-perf-v2",
+    "partition_hash": "484721899eb0a2b7d994ee26476a11f97b4dcf1ee8aaf15d70fc3eec1301c3aa",
+    "split_hash": "f98af60275a8d55d812bad4b03b4e3be3b3c56593a1c28d4d03fe5d5679f4c20",
+    "tangs": "D:\\Auto-claude-code-research-in-sleep\\gradvax_experiments\\results\\pilot-c10-100-tangs-tau5-20000step-seed0-perf-v2"
+  },
+  "performance_pp": {
+    "bacc_delta": 1.2857709118578642,
+    "fixmatch_bacc": 68.20315336837076,
+    "fixmatch_tail": 45.0,
+    "head_delta": -10.32098765432099,
+    "tail_delta": 13.333333333333336,
+    "tangs_bacc": 69.48892428022863,
+    "tangs_tail": 58.333333333333336
+  },
+  "reasons": [],
+  "recommendation": "Proceed to the registered 50k development freeze; do not launch 250k runs before tuning is frozen.",
+  "scope": "Development validation only; this gate is not paper evidence.",
+  "status": "PASS",
+  "thresholds": {
+    "expected_steps": 20000,
+    "max_bacc_regression_pp": 0.5,
+    "min_anchor_coverage": 0.9,
+    "min_bacc_signal_pp": 0.25,
+    "min_eligible_steps": 100,
+    "min_tail_signal_pp": 0.5,
+    "min_trigger_fraction": 0.1
+  }
+}

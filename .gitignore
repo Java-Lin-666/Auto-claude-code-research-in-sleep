@@ -47,3 +47,8 @@ patent/
 
 # ARIS runtime state (per-project traces, caches, installed-skills manifest)
 .aris/
+
+# TANGS local datasets and generated training artifacts
+gradvax_experiments/data/cache/
+gradvax_experiments/results/*
+!gradvax_experiments/results/minimal-gate-c10-100-20000step.json
