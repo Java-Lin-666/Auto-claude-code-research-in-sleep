@@ -1,49 +1,171 @@
-# Reported Results Extracted From Local Papers
+# Reported Results From Primary Papers
 
-Purpose: collect baseline numbers that can be cited as reported results, not as locally reproduced results.
+*Specification version: 4.6 recovery policy — literature registry unchanged, local comparison policy strengthened*
+*Aligned with the TANGS v4.6 proposal, plan, and tracker.*
+*Purpose: preserve audited paper-reported numbers used as citation-marked baselines in the TANGS main comparison table. Local development status may be noted only to track what remains; it is never a source for a reported-baseline row.*
 
-Main caution: these papers usually report bACC/GM or test accuracy, while the GradVax plan asks for Overall, Head, Medium, Tail, and Balanced Accuracy under one unified protocol. Use these numbers as background or secondary reported comparisons unless the GradVax runs exactly match the paper protocol.
+## Evidence and Citation Rules
 
-## Source Mapping
+Every numerical block must identify:
 
-- paper1: Lee and Kim, 2024, CDMAD: Class-Distribution-Mismatch-Aware Debiasing for Class-Imbalanced Semi-Supervised Learning.
-- paper2: Li et al., 2022, Adaptive Confidence Margin for semi-supervised facial expression recognition.
-- paper3: Sohn et al., FixMatch.
-- paper4: Wei and Gan, 2023, Towards Realistic Long-Tailed Semi-Supervised Learning: Consistency is All You Need.
-- paper5: Xing et al., 2025, LCGC.
-- extra-2510.03993v6: Hou et al., 2025, CPG: Controllable Pseudo-label Generation Towards Realistic Long-Tailed Semi-Supervised Learning.
-- extra-2312.15702v2: Ma et al., 2024, CPE: Three Heads Are Better Than One.
-- extra-2402.13505v4: Du et al., 2024, SimPro: A Simple Probabilistic Framework Towards Realistic Long-Tailed Semi-Supervised Learning.
-- extra-2106.05682v2: Oh et al., 2022, DASO: Distribution-Aware Semantics-Oriented Pseudo-label for Imbalanced Semi-Supervised Learning.
-- extra-2403.12986v2: Feng et al., 2024, BaCon: Boosting Imbalanced Semi-supervised Learning via Balanced Feature-Level Contrastive Learning.
-- extra-2305.08661v1: Du et al., 2023, GLMC: Global and Local Mixture Consistency Cumulative Learning for Long-tailed Visual Recognitions.
-- extra-2306.04621v3: Sanchez Aimar et al., 2024, ADELLO/FlexDA: Flexible Distribution Alignment for Long-tailed Semi-supervised Learning with Proper Calibration.
-- extra-2101.09536v2: Smith et al., 2021, Memory-Efficient Semi-Supervised Continual Learning.
-- extra-2103.16725v2: Hu et al., 2021, SimPLE: Similar Pseudo Label Exploitation for Semi-Supervised Classification.
+- primary-paper URL or DOI/arXiv ID;
+- exact table/appendix location;
+- dataset counts and distribution setting;
+- metric definition;
+- number of runs when stated;
+- whether the uncertainty is SD, SE, CI, or unresolved;
+- whether the values were visually checked against the primary PDF.
 
-## Alignment With Current GradVax Plan
+Do not infer an uncertainty type from the “+/-” symbol or convert SE to SD without showing the conversion. In the combined main table, retain published SE/SD on cited rows and label the proposed row `TANGS (ours)`; the experimental setup records the locked seed-0 execution protocol once.
 
-Current required GradVax benchmarks:
+Any source-registry row containing `[VERIFY]` is quarantined: its retained numerical block may be used to guide a future audit, but no value from that block may be copied into the paper, used for a superiority claim, or treated as a checked baseline until the source URL, exact row, metric, protocol, run count, and uncertainty type are verified and the registry state is updated.
 
-- CIFAR-10-LT gamma=100, consistent distribution.
-- CIFAR-100-LT gamma=100, consistent distribution.
-- STL-10-LT gamma_l in {10, 20}, gamma_u=N/A, original unlabeled pool.
+The repository currently does not contain the source PDFs represented by the old aliases paper1–paper5. The official URLs below are therefore the traceable sources; if local PDFs are added later, record their paths and SHA256 values.
 
-CIFAR-100-LT gamma=150 is no longer part of the required primary table. Keep it only as an optional appendix stress test if the gamma=100 core package finishes cleanly.
+### v4.6 Local-Baseline Policy (Controlling)
 
-Reported numbers in this file are therefore mainly useful for:
+The citations and numerical values in this file remain literature context; the
+v4.6 recovery does not alter them. It does alter how efficacy is established.
 
-- background/context comparisons;
-- checking whether local reproduced baselines are in a plausible range;
-- related-work discussion on pseudo-label bias and class imbalance.
+The v4.5 first matrix showed that a reported FixMatch number alone is
+insufficient for causal diagnosis under the derived local implementation:
+v4.5 TANGS reached 36.53% C100 bACC versus the paper-reported 37.6%, but no
+exact paired local FixMatch full run existed. The result therefore cannot
+separate a weak local substrate realization from harm caused by surgery.
 
-They should not replace local GradVax-protocol runs for the primary table, because the main paper reports Overall, Head, Medium, Tail, and Balanced Accuracy under a unified protocol.
+For v4.6:
+
+- the 50k C100 development gate includes an exact paired local FixMatch run;
+- after a PASS, the first 250k stage includes another exact paired local
+  FixMatch run plus `tangs-v46`, with identical seed, split, loader policy,
+  objective, schedule, and final-EMA evaluation;
+- the local paired difference is the primary efficacy estimate for the method
+  revision;
+- CDMAD Table 4 FixMatch (37.6 +/- 0.48 bACC) remains a cited external context
+  row and implementation-alignment check, not a substitute for the pair;
+- DARP/ABC/CDMAD/LCGC and other verified rows remain reported comparisons and
+  must never be described as locally reproduced;
+- v4.5 C10/C100 values and every development value remain historical or
+  development evidence, never v4.6 main-table rows.
+
+No cross-dataset v4.6 main-table claim is allowed until the paired C100 core
+stage passes and later protocol rows are separately authorized.
+
+## Primary Source Registry
+
+| ID | Primary source | Numerical location used here | Reported uncertainty | Audit state |
+|---|---|---|---|---|
+| DARP-2020 | [NeurIPS paper](https://proceedings.neurips.cc/paper/2020/hash/a7968b4339a1b85b7dbdb362dc44f9c4-Abstract.html), [PDF](https://papers.nips.cc/paper/2020/file/a7968b4339a1b85b7dbdb362dc44f9c4-Paper.pdf) | Tables 1 and 3; experimental setup §4.1 | mean ± SD over 3 random trials | source, counts, metrics, uncertainty, and required rows checked |
+| ABC-2021 | [NeurIPS paper](https://proceedings.neurips.cc/paper/2021/hash/3953630da28e5181cffca1278517e3cf-Abstract.html), [PDF](https://papers.nips.cc/paper/2021/file/3953630da28e5181cffca1278517e3cf-Paper.pdf) | method source only | mean ± SD; 5 runs in its main setting and 3 in other settings | original numeric protocol is not a TANGS protocol; do not use its main table as a direct substitute |
+| CDMAD-2024 | [CVPR paper](https://openaccess.thecvf.com/content/CVPR2024/html/Lee_CDMAD_Class-Distribution-Mismatch-Aware_Debiasing_for_Class-Imbalanced_Semi-Supervised_Learning_CVPR_2024_paper.html) and [supplement](https://openaccess.thecvf.com/content/CVPR2024/supplemental/Lee_CDMAD_Class-Distribution-Mismatch-Aware_Debiasing_CVPR_2024_supplemental.pdf) | main Tables 1–5; supplement setup and baseline provenance | mean ± SE over 3 runs for CIFAR/STL tables | rows, counts, base configuration, uncertainty, and baseline provenance checked; primary main-table comparison source for v4.5 |
+| LCGC-2025 | [AAAI paper](https://ojs.aaai.org/index.php/AAAI/article/view/35474), [arXiv PDF](https://arxiv.org/pdf/2504.06544) | Tables 1,2,4,5 | mean ± SE over 3 runs | values spot-checked; label as SE |
+| ACR-2023 | [CVPR paper](https://openaccess.thecvf.com/content/CVPR2023/html/Wei_Towards_Realistic_Long-Tailed_Semi-Supervised_Learning_Consistency_Is_All_You_Need_CVPR_2023_paper.html) | Tables 1,2 | mean ± SD over 3 independent runs | source, uncertainty statement, and representative values checked |
+| CPE-2024 | [arXiv:2312.15702](https://arxiv.org/pdf/2312.15702) | Tables 2,3 | mean ± SD over 3 seeds | values spot-checked |
+| SIMPRO-2024 | [PMLR paper](https://proceedings.mlr.press/v235/du24b.html) | Tables 1,2 | [VERIFY] | values spot-checked; uncertainty label pending |
+| DASO-2022 | [arXiv:2106.05682](https://arxiv.org/abs/2106.05682) | Table 1; Appendix Table 12 | [VERIFY] | values retained; row audit pending |
+| BACON-2024 | [arXiv:2403.12986](https://arxiv.org/abs/2403.12986) | Tables 1,2 | [VERIFY] | values retained; row audit pending |
+| ADELLO-2024 | [arXiv:2306.04621](https://arxiv.org/abs/2306.04621) | Table 3; Appendix B; Tables 11,12 | [VERIFY] | caption/metric ambiguity retained explicitly |
+| CPG-2025 | [NeurIPS proceedings](https://papers.nips.cc/paper_files/paper/2025/hash/abcd225747ec4a176a5ff59e56e0d2eb-Abstract-Conference.html) | no values copied | N/A | context only |
+
+Unrelated sources retained only for exclusion notes:
+
+- Adaptive Confidence Margin: facial-expression SSL, not the TANGS LTSSL benchmark.
+- FixMatch original: balanced SSL background, not LTSSL evidence.
+- GLMC: supervised long-tailed recognition.
+- Memory-Efficient Semi-Supervised Continual Learning and SimPLE: different task settings.
+
+## Alignment With Current TANGS Protocols
+
+Required local protocols:
+
+- P-C10-100: CIFAR-10-LT, \(N_1=1500\), \(M_1=3000\), \(\gamma_l=\gamma_u=100\).
+- P-C100-100: CIFAR-100-LT, \(N_1=150\), \(M_1=300\), \(\gamma_l=\gamma_u=100\).
+- P-STL10-20: STL-10-LT, \(N_1=450\), original 100k unlabeled pool, \(\gamma_l=20\).
+
+P-STL10-10 is reported context and an optional local extension, not part of the minimum v4.5 full-run budget.
+
+### Released-Code Alignment Audit
+
+The vendored `CDMAD/` code is the clean official `LeeHyuck/CDMAD` commit `7cd732b4615b9d94934a9197e69c6775496fb5ee` and is the implementation substrate for local TANGS runs and mechanism controls. The audit found:
+
+- `fixmatchcdmad.py` uses WRN-28-2, FP32, Adam at constant 1.5e-3 with library defaults and no scheduler, batches 32/64, 500 epochs × 500 steps, EMA 0.999, and dataset-specific custom decay 0.04/0.08/0.01;
+- `wrn.py` retains LeakyReLU 0.1 and an unused four-way rotation head; its BatchNorm wrapper does not forward its declared `1e-3` arguments, so executed values are PyTorch defaults `eps=1e-5`, `momentum=0.1`;
+- train loaders use `shuffle=True`, `drop_last=True`, four workers, and iterator restart on exhaustion; the test loader uses batch 200, `shuffle=False`, and four workers;
+- `loss=Lx+Lu`, so the released FixMatch-family weight is 1.0 and there is no auxiliary loss;
+- `WeightEMA` first copies EMA-model state into the online model, then updates `state_dict()` entries after Adam; floating buffers as well as parameters inherit the executed EMA/decay behavior;
+- the data pipeline returns one weak and two strong views, with RandAugment(3,4) and Cutout(16);
+- CIFAR unlabeled-loader indices use `idxs[:n_labeled+n_unlabeled]`, so the labeled prefix is included;
+- the released STL-10 loader appends the selected labeled images to the official 100k unlabeled split, so the actual unlabeled-loader cardinality is `100000 + |L|`;
+- CIFAR-10 and STL-10 do not shuffle class indices by seed; CIFAR-100 shuffles only when `manualSeed != 0`;
+- `fixmatchcdmad.py` has one `manualSeed` argument with default 0, every README command passes 0, and the repository contains no multi-seed experiment driver; the paper's separate three-run SE statement is retained as paper-level provenance rather than inferred from the code;
+- the released script sets deterministic flags and later re-enables `cudnn.benchmark=True`; v4.5 deliberately keeps benchmark disabled;
+- `WeightEMA.step()` implements parameter decay as `param *= 1 - wd*lr`, not Adam weight decay;
+- the released CDMAD branch uses soft pseudo-labels, default confidence threshold 0, white-image subtraction after epoch 100, and test-time subtraction.
+
+The local TANGS protocol reuses this infrastructure, locks `manualSeed=0`, restores the hard 0.95-threshold FixMatch objective, and disables white-image subtraction. The resulting benchmark configuration aligns the principal dataset, model, optimizer, step-budget, augmentation, and metric choices used by the CDMAD FixMatch-family tables.
+
+The seed-0 choice follows the released execution path. The TANGS row is reported as a raw seed-0 result, while cited rows retain their published uncertainty.
+
+CDMAD's supplement states that reproducible baseline values were taken from Lai et al. and Fan et al., with other rows measured from uploaded code. The TANGS table follows the same literature-baseline convention and cites both the numerical table source and original method.
+
+Reported numbers are used for:
+
+- the primary benchmark comparison table;
+- direct bACC/GM comparisons against TANGS;
+- related-work and mechanism positioning.
+
+They replace local reruns of plain FixMatch and established LTSSL baselines in C1. TANGS-specific mechanism controls, ablations, diagnostics, and cost measurements remain local.
+
+The paired 20k DEV-C10-100 FixMatch/TANGS pilot and the v4.5 paired 50k FixMatch development reference are pre-compute/tuning controls only. Their held-out validation values never enter the paper main table and do not alter the zero-local-confirmatory-baseline policy for C1. The 50k reference is used only to enforce the locked bACC/GM/Head/Overall balance gate before freezing \(\tau\).
+
+Main-table baseline policy:
+
+- use CDMAD-2024 Tables 1, 2, and 4 as the primary numerical source for matching FixMatch-family settings;
+- cite DARP, CReST, ABC, CoSSL, UDAL, and CDMAD rather than rerunning them locally;
+- cite LCGC and later methods wherever the registered benchmark setting and metric match;
+- keep SimPro, DASO, BaCon, and ADELLO quarantined wherever `[VERIFY]` remains;
+- run only TANGS, B1, C2, D1, and E1 locally in the minimum plan.
+
+Only registry rows without `[VERIFY]` may enter the main table. Each cited method carries a source marker, and direct differences from TANGS are calculated in percentage points.
+
+## Citation-Ready CDMAD-Table Substitutions
+
+These rows justify the zero-local-baseline-run policy in EXPERIMENT_TRACKER.md. Values are percentages and populate the citation-marked main comparison table alongside the local TANGS row.
+
+| TANGS protocol | Method | Citation and row | Paper-reported result | Uncertainty | Benchmark alignment |
+|---|---|---|---:|---|---|
+| P-C10-100 | FixMatch | CDMAD-2024 Table 1, \(\gamma=100\) | 71.5 / 66.8 bACC/GM | SE, 3 runs | matching counts, imbalance, WRN-28-2 FixMatch family, and 250k-step setup |
+| P-C100-100 | FixMatch | CDMAD-2024 Table 4, \(\gamma=100\) | 37.6 bACC | SE, 3 runs | matching counts, imbalance, WRN-28-2 FixMatch family, and 250k-step setup |
+| P-STL10-10 | FixMatch | CDMAD-2024 Table 2, \(\gamma_l=10\) | 72.9 / 69.6 bACC/GM | SE, 3 runs | matching \(N_1=450\), original 100k unlabeled pool, and FixMatch family |
+| P-STL10-20 | FixMatch | CDMAD-2024 Table 2, \(\gamma_l=20\) | 63.4 / 52.6 bACC/GM | SE, 3 runs | matching \(N_1=450\), original 100k unlabeled pool, and FixMatch family |
+| P-C10-100 | FixMatch+DARP | DARP-2020 Table 1, \(\gamma_l=\gamma_u=100\) | 75.5 / 73.0 bACC/GM | SD, 3 trials | matching \(N_1=1500,M_1=3000\), imbalance setting, and bACC/GM metrics |
+| P-C100-100 | FixMatch+DARP | CDMAD-2024 Table 4, \(\gamma=100\) | 38.3 bACC | SE, 3 runs | matching counts, imbalance, WRN-28-2 FixMatch family, and 250k-step setup |
+| P-STL10-10 | FixMatch+DARP | DARP-2020 Table 3, \(\gamma_l=10\) | 77.8 / 76.5 bACC/GM | SD, 3 trials | matching \(N_1=450\), original 100k unlabeled pool, and bACC/GM metrics |
+| P-STL10-20 | FixMatch+DARP | DARP-2020 Table 3, \(\gamma_l=20\) | 69.9 / 65.4 bACC/GM | SD, 3 trials | matching \(N_1=450\), original 100k unlabeled pool, and bACC/GM metrics |
+| P-C10-100 | FixMatch+ABC | CDMAD-2024 Table 1, \(\gamma_l=\gamma_u=100\) | 81.1 / 80.3 bACC/GM | SE, 3 runs | matching counts, imbalance, WRN-28-2, Adam, batch 32, \(\mu=2\), and 250k steps |
+| P-STL10-10 | FixMatch+ABC | CDMAD-2024 Table 2, \(\gamma_l=10\) | 79.1 / 78.1 bACC/GM | SE, 3 runs | matching \(N_1=450\), original 100k unlabeled pool, and FixMatch-family configuration |
+| P-STL10-20 | FixMatch+ABC | CDMAD-2024 Table 2, \(\gamma_l=20\) | 73.8 / 72.1 bACC/GM | SE, 3 runs | matching counts, unlabeled pool, and FixMatch-family configuration |
+
+ABC citation rule: cite ABC-2021 for the method and CDMAD-2024 for the numerical row. The ABC-2021 main table uses a different \(\gamma,\beta\) construction, overall/minority accuracy, and no STL-10 result, so it is not the numerical source for the substitutions above.
+
+DARP citation rule: prefer DARP-2020 Tables 1/3 for P-C10-100 and STL-10 because the paper explicitly states the counts, bACC/GM metrics, and three-trial SD. Use CDMAD-2024 Table 4 for the P-C100-100 main-table row.
+
+CDMAD reported-evidence rule: all CDMAD/FixMatch-family numbers retained below are citation-marked paper results. They appear in the same main table as TANGS with their published SE labels.
+
+Statistical presentation:
+
+- every minimum-plan local row uses `manualSeed=0` once;
+- report the raw TANGS value and its percentage-point difference from each cited baseline;
+- label the proposed row `TANGS (ours)` and record the seed-0 execution rule in the experimental setup;
+- place any optional nonzero-seed robustness extension in a separate supplementary block;
+- reported ReMixMatch values cannot support a TANGS transfer claim;
+- local test results use the final locked EMA checkpoint, not best-test selection.
 
 ## Directly Useful As Reported LTSSL Baselines
 
 ### CIFAR-10-LT, consistent distribution, bACC/GM
 
-Source: LCGC 2025, Table 1. Setting: gamma = gamma_l = gamma_u, gamma_u known.
+Primary v4.5 source: CDMAD-2024 Table 1 for rows through CDMAD; LCGC-2025 Table 1 adds the later LCGC row and provides a cross-check. Setting: gamma = gamma_l = gamma_u, gamma_u known. Both papers report three-run mean +/- **standard error (SE)**. Treat every +/- value in this block as paper-reported SE, not as uncertainty attached to local seed-0 values.
 
 | Method | gamma=50 | gamma=100 | gamma=150 |
 |---|---:|---:|---:|
@@ -61,7 +183,7 @@ Source: LCGC 2025, Table 1. Setting: gamma = gamma_l = gamma_u, gamma_u known.
 
 ### CIFAR-10-LT, mismatch distribution, bACC/GM
 
-Source: CDMAD 2024 Table 2 and LCGC 2025 Table 2. Setting: gamma_l = 100, gamma_u unknown.
+Primary v4.5 source: CDMAD-2024 Table 2 for rows through CDMAD; LCGC-2025 Table 2 adds the later LCGC row. Setting: gamma_l = 100, gamma_u unknown. Both primary papers state mean+/-SE over three runs for these CIFAR/STL experiments.
 
 | Method | gamma_u=1 | gamma_u=50 | gamma_u=150 |
 |---|---:|---:|---:|
@@ -75,30 +197,30 @@ Source: CDMAD 2024 Table 2 and LCGC 2025 Table 2. Setting: gamma_l = 100, gamma_
 
 ### CIFAR-100-LT, consistent distribution, bACC
 
-Source: CDMAD 2024 Table 4 and LCGC 2025 Table 4. Setting: gamma = gamma_l = gamma_u.
+Primary v4.5 source: CDMAD-2024 Table 4 for rows through CDMAD; LCGC-2025 Table 4 adds the later LCGC row. Setting: gamma = gamma_l = gamma_u. Values are paper-reported mean+/-SE over three runs.
 
 | Method | gamma=20 | gamma=50 | gamma=100 |
 |---|---:|---:|---:|
-| FixMatch | 49.6+/-0.8 | 42.1+/-0.3 | 37.6+/-0.5 |
-| FixMatch+DARP | 50.8+/-0.8 | 43.1+/-0.5 | 38.3+/-0.5 |
-| FixMatch+DARP+cRT | 51.4+/-0.7 | 44.9+/-0.5 | 40.4+/-0.8 |
-| FixMatch+CReST | 51.8+/-0.7 | 44.9+/-0.5 | 40.1+/-0.7 |
-| FixMatch+CReST+LA | 52.9+/-0.1 | 47.3+/-0.2 | 42.7+/-0.7 |
-| FixMatch+ABC | 53.3+/-0.8 | 46.7+/-0.3 | 41.2+/-0.7 |
-| FixMatch+CoSSL | 53.9+/-0.8 | 47.6+/-0.6 | 43.0+/-0.6 |
-| FixMatch+UDAL | - | 48.0+/-0.6 | 43.7+/-0.4 |
-| FixMatch+CDMAD | 54.3+/-0.4 | 48.8+/-0.8 | 44.1+/-0.3 |
+| FixMatch | 49.6+/-0.78 | 42.1+/-0.33 | 37.6+/-0.48 |
+| FixMatch+DARP | 50.8+/-0.77 | 43.1+/-0.54 | 38.3+/-0.47 |
+| FixMatch+DARP+cRT | 51.4+/-0.68 | 44.9+/-0.54 | 40.4+/-0.78 |
+| FixMatch+CReST | 51.8+/-0.12 | 44.9+/-0.50 | 40.1+/-0.65 |
+| FixMatch+CReST+LA | 52.9+/-0.07 | 47.3+/-0.17 | 42.7+/-0.70 |
+| FixMatch+ABC | 53.3+/-0.79 | 46.7+/-0.26 | 41.2+/-0.06 |
+| FixMatch+CoSSL | 53.9+/-0.78 | 47.6+/-0.57 | 43.0+/-0.61 |
+| FixMatch+UDAL | - | 48.0+/-0.56 | 43.7+/-0.41 |
+| FixMatch+CDMAD | 54.3+/-0.44 | 48.8+/-0.75 | 44.1+/-0.29 |
 | FixMatch+LCGC | 55.3+/-0.5 | 49.3+/-0.3 | 44.8+/-0.5 |
-| ReMixMatch | 51.6+/-0.4 | 44.2+/-0.6 | 39.3+/-0.4 |
-| ReMixMatch+ABC | 55.6+/-0.4 | 47.9+/-0.1 | 42.2+/-0.1 |
-| ReMixMatch+CDMAD | 57.0+/-0.3 | 51.1+/-0.5 | 44.9+/-0.4 |
+| ReMixMatch | 51.6+/-0.43 | 44.2+/-0.59 | 39.3+/-0.43 |
+| ReMixMatch+ABC | 55.6+/-0.35 | 47.9+/-0.10 | 42.2+/-0.12 |
+| ReMixMatch+CDMAD | 57.0+/-0.32 | 51.1+/-0.46 | 44.9+/-0.42 |
 | ReMixMatch+LCGC | 57.3+/-0.3 | 50.7+/-0.4 | 45.9+/-0.6 |
 
 ### STL-10-LT, bACC/GM
 
-Source: LCGC 2025, Table 5. Setting: STL-10-LT with original unlabeled pool; gamma_u is unknown / N/A. Metric: bACC/GM.
+Primary v4.5 source: CDMAD-2024 Table 2 for rows through CDMAD; LCGC-2025 Table 5 adds the later LCGC row. Setting: STL-10-LT with original unlabeled pool; gamma_u is unknown / N/A. Metric: bACC/GM. Values are paper-reported mean+/-SE over three runs.
 
-Use in GradVax paper: usable as the main STL-10-LT reported baseline block for balanced long-tailed metrics. Do not mix numerically with top-1 accuracy tables.
+Use in TANGS paper: usable as the main STL-10-LT reported baseline block for balanced long-tailed metrics. Do not mix numerically with top-1 accuracy tables.
 
 | Method | gamma_l=10 | gamma_l=20 |
 |---|---:|---:|
@@ -112,7 +234,7 @@ Use in GradVax paper: usable as the main STL-10-LT reported baseline block for b
 
 ### CIFAR-10/100-LT, ACR reported test accuracy
 
-Source: Wei and Gan 2023, Table 1. This uses test accuracy, not bACC/GM.
+Source: [Wei and Gan, CVPR 2023](https://openaccess.thecvf.com/content/CVPR2023/html/Wei_Towards_Realistic_Long-Tailed_Semi-Supervised_Learning_Consistency_Is_All_You_Need_CVPR_2023_paper.html), Table 1. This uses top-1 test accuracy, not bACC/GM, and reports mean ± SD over three independent runs.
 
 | Dataset / setting | N1 | M1 | FixMatch | DARP | DASO | ABC | ACR |
 |---|---:|---:|---:|---:|---:|---:|---:|
@@ -127,9 +249,9 @@ Source: Wei and Gan 2023, Table 1. This uses test accuracy, not bACC/GM.
 
 ### STL-10-LT, ACR reported test accuracy
 
-Source: Wei and Gan 2023, Table 2. Setting: STL-10-LT with original unlabeled pool; gamma_u is N/A. Metric: top-1 test accuracy (%), not bACC/GM.
+Source: [Wei and Gan, CVPR 2023](https://openaccess.thecvf.com/content/CVPR2023/html/Wei_Towards_Realistic_Long-Tailed_Semi-Supervised_Learning_Consistency_Is_All_You_Need_CVPR_2023_paper.html), Table 2. Setting: STL-10-LT with original unlabeled pool; gamma_u is N/A. Metric: top-1 test accuracy (%), not bACC/GM; uncertainty is SD over three independent runs.
 
-Use in GradVax paper: usable as supplementary reported results for ACR/DASO/DARP/CReST under the ACR protocol. It supports related-work and sanity-check discussion, but should be separated from the LCGC bACC/GM table because the metric and protocol are different.
+Use in TANGS paper: usable as supplementary reported results for ACR/DASO/DARP/CReST under the ACR protocol. It supports related-work and sanity-check discussion, but should be separated from the LCGC bACC/GM table because the metric and protocol are different.
 
 | Method | gamma_l=10, N1=150, M=100k | gamma_l=10, N1=450, M=100k | gamma_l=20, N1=150, M=100k | gamma_l=20, N1=450, M=100k |
 |---|---:|---:|---:|---:|
@@ -225,7 +347,7 @@ Source: CPE 2024, Table 3. Metric: top-1 accuracy (%), not bACC/GM. Use as suppl
 
 ### ADELLO/FlexDA reported balanced accuracy and calibration
 
-Source: Sanchez Aimar et al., 2024, Flexible Distribution Alignment: Towards Long-tailed Semi-supervised Learning with Proper Calibration, Table 3. Metric: paper reports test balanced accuracy averaged over final epochs, although the table caption says test accuracy. Use as supplementary LTSSL context; keep separate from LCGC bACC/GM and from local GradVax unified metrics.
+Source: Sanchez Aimar et al., 2024, Flexible Distribution Alignment: Towards Long-tailed Semi-supervised Learning with Proper Calibration, Table 3. Metric: paper reports test balanced accuracy averaged over final epochs, although the table caption says test accuracy. Use as supplementary LTSSL context; keep separate from LCGC bACC/GM and from local TANGS unified metrics.
 
 #### STL-10-LT, gamma_u=N/A, N1=150, low-label regime
 
@@ -244,20 +366,20 @@ Source: Sanchez Aimar et al., 2024, Flexible Distribution Alignment: Towards Lon
 
 Additional useful evidence from the same paper:
 
-- Table 2 reports CIFAR10-LT label-shift results and CIFAR100-LT gamma_l=50 label-shift results for FixMatch, DARP, CReST+, ABC, DASO, DebiasPL, CoSSL, UDAL, ADELLO, and SoftMatch. This is useful context but does not match the GradVax core CIFAR-100-LT gamma=100 setting.
-- Appendix B reports training time on CIFAR100-LT50 using one V100-32GB: FixMatch 5h15m, ADELLO 5h18m, ABC 5h21m, CReST+ 6h22m, CoSSL 7h29m, DARP 7h43m, DASO 19h32m. Use only as qualitative overhead context because hardware/protocol differ from GradVax runs.
-- Tables 11 and 12 report ECE/MCE calibration on CIFAR10-LT, STL10-LT20, and CIFAR100-LT. For STL10-LT20, ADELLO reports ECE 6.9+/-0.3 and MCE 25.9+/-1.0, much lower than FixMatch's ECE 37.8+/-4.5 and MCE 55.1+/-4.9. Useful for related work on pseudo-label confidence/calibration, not for GradVax's primary accuracy table.
+- Table 2 reports CIFAR10-LT label-shift results and CIFAR100-LT gamma_l=50 label-shift results for FixMatch, DARP, CReST+, ABC, DASO, DebiasPL, CoSSL, UDAL, ADELLO, and SoftMatch. This is useful context but does not match the TANGS core CIFAR-100-LT gamma=100 setting.
+- Appendix B reports training time on CIFAR100-LT50 using one V100-32GB: FixMatch 5h15m, ADELLO 5h18m, ABC 5h21m, CReST+ 6h22m, CoSSL 7h29m, DARP 7h43m, DASO 19h32m. Use only as qualitative overhead context because hardware/protocol differ from TANGS runs.
+- Tables 11 and 12 report ECE/MCE calibration on CIFAR10-LT, STL10-LT20, and CIFAR100-LT. For STL10-LT20, ADELLO reports ECE 6.9+/-0.3 and MCE 25.9+/-1.0, much lower than FixMatch's ECE 37.8+/-4.5 and MCE 55.1+/-4.9. Useful for related work on pseudo-label confidence/calibration, not for TANGS's primary accuracy table.
 - It discusses biased pseudo-label distributions and low-confidence pseudo-label usage, but it does not report direct pseudo-label F1, pseudo-label precision/recall, tail pseudo-label recall, or minority pseudo-label precision. Use DASO/CPE for those more direct pseudo-label-quality evidence types.
 
 ### CPG paper suitability note
 
 Source: CPG 2025. This paper is useful for recent ReaLTSSL context and includes FixMatch, FreeMatch, SoftMatch, ACR, SimPro, CDMAD, and CPG on CIFAR-10-LT and CIFAR-100-LT.
 
-Do not copy CPG values into the main reported table without visual table verification: the text extraction of its main tables is noisy. Also, its CIFAR-10-LT uses Nmax=400, Mmax=4600 and gamma in {100,150,200}; its CIFAR-100-LT uses Nmax=50, Mmax=450 and gamma in {10,15,20}. This is a realistic-arbitrary-distribution protocol rather than the exact GradVax protocol.
+Do not copy CPG values into the main reported table without visual table verification: the text extraction of its main tables is noisy. Also, its CIFAR-10-LT uses Nmax=400, Mmax=4600 and gamma in {100,150,200}; its CIFAR-100-LT uses Nmax=50, Mmax=450 and gamma in {10,15,20}. This is a realistic-arbitrary-distribution protocol rather than the exact TANGS protocol.
 
 ### DASO reported top-1 accuracy
 
-Source: Oh et al., 2022, DASO: Distribution-Aware Semantics-Oriented Pseudo-label for Imbalanced Semi-Supervised Learning, Table 1. Metric: top-1 accuracy (%). Useful for reported FixMatch/DARP/CReST+/ABC/DASO context and pseudo-label bias motivation. It does not include CIFAR-100-LT gamma=100 or gamma=150.
+Source: Oh et al., 2022, DASO: Distribution-Aware Semantics-Oriented Pseudo-label for Imbalanced Semi-Supervised Learning, Table 1. Metric: top-1 accuracy (%). Useful for reported FixMatch/DARP/CReST+/ABC/DASO context and pseudo-label bias motivation. It does not include CIFAR-100-LT gamma=100.
 
 #### CIFAR-100-LT, consistent distribution
 
@@ -293,7 +415,7 @@ Source: DASO 2022 Appendix Table 12. Setting: STL10-LT, M=100k, gamma_u=N/A. Met
 
 ### BaCon reported balanced accuracy
 
-Source: Feng et al., 2024, BaCon: Boosting Imbalanced Semi-supervised Learning via Balanced Feature-Level Contrastive Learning, Table 1 and Table 2. Metric: balanced accuracy (%). Useful as a feature/representation-level CISSL reported baseline and as a contrast to GradVax's classifier-gradient-level intervention. It does not include CIFAR-100-LT gamma=150.
+Source: Feng et al., 2024, BaCon: Boosting Imbalanced Semi-supervised Learning via Balanced Feature-Level Contrastive Learning, Table 1 and Table 2. Metric: balanced accuracy (%). Useful as a feature/representation-level CISSL reported baseline and as a contrast to TANGS's classifier-gradient-level intervention.
 
 #### Main bACC setting
 
@@ -328,40 +450,81 @@ Source: BaCon Table 2. Metric: balanced accuracy (%). This is CIFAR-10-LT only.
 | CoSSL | 83.94 | 71.99 | 81.83 | 74.14 |
 | BaCon | 84.61 | 83.80 | 81.99 | 82.35 |
 
-## Not Directly Reusable For The GradVax Main Table
+## Current Related Work Without Imported Numbers
+
+These papers are required in the novelty/related-work audit, but their numerical tables have not been imported because their protocols must first be mapped to the locked TANGS protocols.
+
+| Work | Venue/year | Why it matters to TANGS | Numerical status |
+|---|---|---|---|
+| [Meta-Expert](https://proceedings.mlr.press/v267/hou25d.html) | ICML 2025 | dynamic expert assignment and multi-depth feature fusion for LTSSL mismatch | no values copied |
+| [CPG](https://papers.nips.cc/paper_files/paper/2025/hash/abcd225747ec4a176a5ff59e56e0d2eb-Abstract-Conference.html) | NeurIPS 2025 | controllable pseudo-label generation under arbitrary unlabeled distributions | no values copied |
+| [Learning Dynamics / DyTrim](https://iclr.cc/virtual/2026/poster/10008364) | ICLR 2026 | direct learning-dynamics analysis of LTSSL bias and a pruning method | no values copied |
+| [SCAD](https://iclr.cc/virtual/2026/poster/10008701) | ICLR 2026 | super-class-aware dynamic logit adjustment and local imbalance | no values copied |
+| [CoLA](https://iclr.cc/virtual/2026/poster/10007342) | ICLR 2026 | co-calibrated logit adjustment and distribution estimation | no values copied |
+| [Gradient Vaccine / GradVac](https://iclr.cc/virtual/2021/poster/2550) | ICLR 2021 | gradient-similarity targeting with EMA statistics; establishes the naming collision that retired “GradVax” | no LTSSL values |
+
+### Corrected Method Characterizations
+
+- **LCGC is not a reweighting-only method.** It computes conflicting gradients and adds a projection-like component to encourage its intended biased direction before baseline-image test-time debiasing. TANGS differs in gradient definitions, asymmetry, exact contribution replacement, direction, and post-projection norm cap.
+- **SimPro is not a prototype method.** It extends an EM interpretation, separates conditional and marginal distribution modeling, estimates the marginal distribution, and trains a Bayes classifier.
+- **TANGS novelty is combination-level only.** Projection, EMA statistics, and norm clipping are individually established techniques.
+
+## Not Directly Reusable For The TANGS Main Table
 
 - FixMatch original paper: standard balanced/semi-supervised benchmarks, not LTSSL. Useful for method description and hyperparameter background only.
-- Adaptive Confidence Margin paper: facial expression recognition datasets (RAF-DB, SFEW, AffectNet), not CIFAR-LT LTSSL. Useful only as related work on adaptive confidence thresholds, not as a baseline table for GradVax.
-- ACR paper: useful for reported LTSSL background, but its CIFAR-100 settings are gamma 10/20, not the current GradVax core CIFAR-100 gamma=100 setting. Its metric is test accuracy, not Head/Medium/Tail/Balanced.
-- SimPro/CPE/CPG papers: useful as reported top-1 accuracy context, but their protocols and metrics differ from the GradVax primary table. Keep them separate from local GradVax results unless the paper explicitly matches the same split, gamma, metric, and training protocol.
+- Adaptive Confidence Margin paper: facial expression recognition datasets (RAF-DB, SFEW, AffectNet), not CIFAR-LT LTSSL. Useful only as related work on adaptive confidence thresholds, not as a baseline table for TANGS.
+- ACR paper: useful for reported LTSSL background, but its CIFAR-100 settings are gamma 10/20, not the current TANGS core CIFAR-100 gamma=100 setting. Its metric is test accuracy, not Head/Medium/Tail/Balanced.
+- SimPro/CPE/CPG papers: useful as reported top-1 accuracy context, but their protocols and metrics differ from the TANGS primary table. Keep them separate from local TANGS results unless the paper explicitly matches the same split, gamma, metric, and training protocol.
 - Smith et al., 2021, Memory-Efficient Semi-Supervised Continual Learning: semi-supervised continual learning on CIFAR-100, not LTSSL main-table evidence.
 - Hu et al., 2021, SimPLE: standard SSL on CIFAR-10/SVHN/CIFAR-100/Mini-ImageNet, not long-tailed CIFAR-LT. Useful only as generic SSL related work if needed.
-- DASO and BaCon: useful as reported CISSL/LTSSL context and mechanism motivation, but their CIFAR-100 settings do not match the current GradVax core CIFAR-100 gamma=100 primary table.
-- GLMC 2023: supervised long-tailed visual recognition on CIFAR-10-LT, CIFAR-100-LT, and ImageNet-LT, not semi-supervised LTSSL. It has CIFAR-LT top-1 and ImageNet-LT Many/Medium/Few results, but no STL-10-LT and no FixMatch/DARP/ABC/SimPro-style SSL comparison. Use only as optional related work for supervised long-tailed representation learning, not as GradVax reported baseline.
-- ADELLO/FlexDA 2024: useful LTSSL reported context, calibration evidence, and overhead comparison. Its CIFAR100-LT main label-shift setting uses gamma_l=50 rather than GradVax's core gamma=100, so use the CIFAR100 numbers as context only. Its STL10-LT20 results are directly useful as supplementary reported context.
+- DASO and BaCon: useful as reported CISSL/LTSSL context and mechanism motivation, but their CIFAR-100 settings do not match the current TANGS core CIFAR-100 gamma=100 primary table.
+- GLMC 2023: supervised long-tailed visual recognition on CIFAR-10-LT, CIFAR-100-LT, and ImageNet-LT, not semi-supervised LTSSL. It has CIFAR-LT top-1 and ImageNet-LT Many/Medium/Few results, but no STL-10-LT and no FixMatch/DARP/ABC/SimPro-style SSL comparison. Use only as optional related work for supervised long-tailed representation learning, not as TANGS reported baseline.
+- ADELLO/FlexDA 2024: useful LTSSL reported context, calibration evidence, and overhead comparison. Its CIFAR100-LT main label-shift setting uses gamma_l=50 rather than TANGS's core gamma=100, so use the CIFAR100 numbers as context only. Its STL10-LT20 results are directly useful as supplementary reported context.
 
-## Current Reported-Baseline Coverage
+## Main-Table Baseline Coverage
 
-| GradVax setting | Reported external context status | Notes |
+| TANGS setting | Main-table baseline status | Notes |
 |---|---|---|
-| CIFAR-10-LT gamma=100 | Covered well | LCGC/CDMAD bACC-GM, ACR/CPE/SimPro top-1, BaCon bACC context. |
-| CIFAR-100-LT gamma=100 | Covered partially | CDMAD/LCGC report bACC for many baselines; still lacks GradVax-specific Head/Medium/Tail under unified protocol. |
-| STL-10-LT gamma_l=10/20 | Covered well as reported context | LCGC reports bACC/GM; ACR, DASO, SimPro, CPE, and ADELLO report top-1/balanced-accuracy-style results under their protocols; BaCon reports balanced accuracy for gamma_l=10. gamma_u is N/A and metric/protocol details vary, so still run local unified metrics. |
-| CIFAR-100-LT gamma=150 | Optional only | No longer a required primary-table gap; treat as appendix stress test if run locally. |
+| P-C10-100 | cited baselines complete; local TANGS pending | CDMAD Table 1 supplies FixMatch-family bACC/GM; matching LCGC rows may be added. |
+| P-C100-100 | cited baselines complete; local TANGS pending | CDMAD Table 4 supplies the primary FixMatch-family bACC table; LCGC Table 4 extends it. |
+| P-STL10-10 | Reported context / optional local | LCGC bACC/GM and ACR/DASO/SimPro/CPE/ADELLO results exist under differing \(N_1\), metric, and uncertainty conventions. |
+| P-STL10-20 | cited baselines complete; local TANGS pending | CDMAD Table 2 supplies FixMatch-family bACC/GM for \(N_1=450\). |
 
-Clarification: CIFAR-100-LT gamma=100 is not missing external reported baselines. The missing part is local GradVax-protocol evidence: FixMatch rerun, FixMatch+GradVax, Head/Medium/Tail, and mechanism diagnostics under the same split/metric/training setup.
+The baseline side of the CDMAD-style main table is complete for all three required settings. The remaining main-table evidence is the three local TANGS rows plus the registered mechanism controls and ablations.
 
-## Are The Reported Results Enough?
+## Remaining Local Evidence
 
-No. They are enough for a reported-results/background table, but not enough for the GradVax paper's main evidence.
+Controlling v4.6 requirement: first complete the five-run paired C100
+development screen, then—only on PASS—the local 250k C100 FixMatch observer /
+`tangs-v46` pair. The legacy v4.5 minimum matrix below is archived and does not
+authorize resumed or new runs. In particular, the interrupted STL v4.5 cell is
+not to be resumed for current evidence.
 
-Still required to run locally:
+Yes for the established baseline rows. They intentionally replace local FixMatch/DARP/ABC/CDMAD reruns in C1.
 
-- FixMatch baseline under the exact GradVax protocol.
-- FixMatch+GradVax under the exact same protocol.
-- Gradient conflict/domination diagnostics.
-- Oracle pseudo-label control.
-- Head-loss downweighting sanity baseline.
-- Component ablations: no conflict, no domination, no EMA.
-- Runtime and GPU memory overhead.
-- Head/Medium/Tail and Balanced Accuracy metrics, because the cited papers mostly report bACC/GM or overall test accuracy.
+The paired 20k DEV-C10-100 spending gate completed on 2026-08-13 with status PASS. It is local development evidence, not an imported paper result and not a main-table row: TANGS versus the paired local FixMatch changed bACC by +1.29 pp and tail accuracy by +13.33 pp, while Overall and Head changed by -5.91 pp and -10.32 pp. The result only authorizes the registered 50k development freeze. That freeze adds one local FixMatch tuning reference and blocks confirmatory execution unless a \(\tau\) candidate satisfies the predeclared balance gate; the three local head-downweight tuning controls run only after that TANGS screen passes. Historical main-table baselines remain cited from their papers, and formal C1 execution remains TANGS-only.
+
+Still required locally:
+
+- U0 exact-contribution, no-op, geometry, runtime-safety, and artifact-trace tests.
+- `manualSeed=0` TANGS runs on P-C10-100, P-C100-100, and P-STL10-20.
+- A1/A2/A3 occurrence, true-class decomposition, and anchor-quality diagnostics.
+- B1 oracle-target-only control with the ordinary accepted set and predicted-head membership held fixed.
+- Head downweighting, matched head-only clipping, and PCGrad-adapted comparisons on P-C100-100.
+- Component ablations: no norm cap, no projection, and instantaneous anchor. Under v4.5, the PCGrad-adapted and no-norm-cap definitions are identical, so the single `C2-PCG` artifact is reused for D1 rather than counted as a second local run.
+- Internal TANGS runtime and memory fractions under the locked timing procedure.
+- H/M/T, bACC, GM, worst-class, raw seed-0 values, and direct differences from cited baselines.
+- ReMixMatch transfer requires the optional local C4 pair.
+
+## Numerical Use Checklist
+
+Before copying any row from this file into a paper:
+
+- [ ] source URL resolves;
+- [ ] exact table and row were checked in the primary PDF;
+- [ ] \(N_1,M_1,\gamma_l,\gamma_u\) match the prose;
+- [ ] metric is labeled as bACC, GM, or top-1;
+- [ ] uncertainty is labeled SD, SE, CI, or unresolved;
+- [ ] cited rows carry source markers and the proposed row is labeled `TANGS (ours)`;
+- [ ] no reported result is described as locally reproduced;
+- [ ] every reported-baseline difference uses a verified source row.

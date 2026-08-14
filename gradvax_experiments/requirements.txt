@@ -1,8 +1,4 @@
-torch>=2.0.0
-torchvision>=0.15.0
-numpy>=1.24.0
-scipy>=1.10.0
-scikit-learn>=1.2.0
-tqdm>=4.65.0
-tensorboard>=2.13.0
-pyyaml>=6.0
+# Install the server-compatible torch/torchvision CUDA wheels first; see README.md.
+numpy==1.26.4
+Pillow==10.4.0
+pytest==8.2.2
