@@ -74,6 +74,8 @@ Machine-readable gate: `results/v46-development-selection.json`.
 
 Gate artifact: `/root/rivermind-data/tangs/repo-v46-c5f7418/gradvax_experiments/results/v46-development-selection.json` (`status: STOP`, `allow_confirmatory_250k: false`). All five raw run directories contain `summary.json`, `development_metrics.jsonl`, and `checkpoint_last.pt`; the shared split hash is `38fc04c6d1d0dd9109879bba0445b40dd264f85b7ef198c640a68c45dac57ca9` and partition hash is `01b501e58a2ee7b38669a235098585d0e55ee3f84d952129aeff0a2a7e344bd0`.
 
+The complete local second-try snapshot is `gradvax_experiments/results/second_try_2026-08-15/`; its preservation and SHA-256 verification record is `refine-logs/SECOND_TRY_2026-08-15.md`.
+
 Only all-PASS sets `allow_confirmatory_250k=true`. This gate is STOP, so no
 250k run, cross-dataset run, oracle, or extra control is authorized. The
 completed evidence must next receive an independent-reviewer audit; it does
