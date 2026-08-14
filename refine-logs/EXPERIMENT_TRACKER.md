@@ -1,8 +1,8 @@
 # TANGS Experiment Tracker
 
 *Specification version: 4.6 — classwise tail-row recovery ledger*
-*Last updated: 2026-08-14*
-*Status: v4.5 first matrix archived; v4.6 implementation, complete local PyTorch suite (53/53 PASS), and target-environment CUDA smoke are DONE. The five sequential C100 development cells are READY/TODO but unstarted, and all 250k v4.6 cells are BLOCKED.*
+*Last updated: 2026-08-15*
+*Status: v4.5 first matrix archived; v4.6 implementation, complete local PyTorch suite (53/53 PASS), target-environment CUDA smoke, and the five sequential C100 development cells are DONE. The machine-readable V46 development gate is STOP; all 250k v4.6 cells remain BLOCKED.*
 *Aligned files: FINAL_PROPOSAL.md v4.6, EXPERIMENT_PLAN.md v4.6, reported_results_from_papers.md v4.6 recovery policy*
 *Legacy working name: GradVax; all new run IDs and paper text use TANGS.*
 
@@ -34,7 +34,7 @@ experiments use explicit v4.6 names.
 | V46-LOCAL-TEST | full pytest suite in registered local FixMatch environment | DONE | 53/53 passed in 5.24 s; Python 3.10.19, torch 2.5.1, torchvision 0.20.1, CUDA 11.8, RTX 4060 |
 | V46-TORCH-PARITY | analytical rows equal autograd, row-only mutation, correction cap, observer no-op | DONE-LOCAL | `test_tailrow_v46.py`; repeat on target server before execution |
 | V46-CUDA-SMOKE | observer/full five-step CUDA, resume, finite logs and memory | DONE | target artifacts and config hashes recorded in §0.2.1; 53 server tests PASS |
-| V46-INDEPENDENT-AUDIT | different model family audits code and raw artifacts | BLOCKED | after server integrity artifacts exist |
+| V46-INDEPENDENT-AUDIT | different model family audits code and raw artifacts | TODO | five completed development artifacts and the STOP gate are ready for independent review |
 
 ### 0.2.1 Target server audit — DONE (2026-08-14)
 
@@ -47,7 +47,7 @@ Target: `jupyter-4fdh8ohtracfw7gp`, one idle NVIDIA GeForce RTX 4090 (24,564 MiB
 | Controlled interrupt + `--resume auto` | DONE | `/root/rivermind-data/tangs/repo-v46-c5f7418/gradvax_experiments/results/v46-smoke-c100-tangs-rho1-resume-v2-seed0` | `cc52d447219a3802b0518afceb2d32f0ec91a7907c5305718e2dbc02d99d91c2`; step-2 checkpoint, controller/RNG/model/optimizer/EMA saved, resumed to completed step 5; finite, strictly increasing JSONL |
 | Interrupt sent after completion | RETAINED-INVALID | `/root/rivermind-data/tangs/repo-v46-c5f7418/gradvax_experiments/results/v46-smoke-c100-tangs-rho1-resume-seed0` | `89dc6007160bf217dd4ec036cc23c9b19aaf99cd0503ab45fbb0e4eaf28f7040`; keep for audit, not accepted as resume validation |
 
-The valid resume event records the expected limitation that DataLoader worker/prefetch state is not serializable; this is not a false bit-exact claim. The new smoke metrics are infrastructure-only and have not been entered as development or paper results. The five 50k cells remain TODO until explicitly started; the machine-readable 50k gate still controls all 250k work.
+The valid resume event records the expected limitation that DataLoader worker/prefetch state is not serializable; this is not a false bit-exact claim. The new smoke metrics are infrastructure-only and have not been entered as development or paper results. After the original host killed the first development process, the queue resumed from its retained checkpoint on replacement host `jupyter-3fclyh0mynm24s7b` (RTX 4090, driver 580.119.02) at the same worktree and deployment commit. The replacement-host suite passed **53 tests in 4.17 s**. The five 50k cells subsequently completed serially; the machine-readable gate below is STOP and continues to control all 250k work.
 
 ### 0.3 Single-GPU development ledger
 
@@ -56,26 +56,28 @@ balanced/disjoint training-source validation set. They run sequentially.
 
 | Order | Run ID | Method | Main role | Status | Config hash | Result |
 |---:|---|---|---|---|---|---|
-| 1 | `v46-dev-c100-100-fixmatch-observer-seed0` | FixMatch + observer | exact paired baseline | TODO | TBD | TBD |
-| 2 | `v46-dev-c100-100-legacy-pcgrad-seed0` | archived `tangs`, tau=inf | legacy comparison | TODO | TBD | TBD |
-| 3 | `v46-dev-c100-100-tailrow-group-seed0` | tailrow-group | isolate row restriction | TODO | TBD | TBD |
-| 4 | `v46-dev-c100-100-tailrow-classwise-seed0` | tailrow-classwise | isolate per-class anchors | TODO | TBD | TBD |
-| 5 | `v46-dev-c100-100-tangs-rho1-seed0` | tangs-v46, rho=1 | full method | TODO | TBD | TBD |
+| 1 | `v46-dev-c100-100-fixmatch-observer-seed0` | FixMatch + observer | exact paired baseline | DONE | `7a15365bf8b73ffa88f6164652f521a3efa28cb32b02d4bd8469e95bb2c23948` | bACC 36.70; H/M/T 69.39/34.12/6.67; GM 5.65; worst 0; dead 22 |
+| 2 | `v46-dev-c100-100-legacy-pcgrad-seed0` | archived `tangs`, tau=inf | legacy comparison | DONE | `b8963e78cd3e5eb384fa5e3e86f31cbf38b97585796cc58094a64ce894a03bd7` | bACC 35.96; H/M/T 67.94/32.00/8.06; GM 8.61; worst 0; dead 14 |
+| 3 | `v46-dev-c100-100-tailrow-group-seed0` | tailrow-group | isolate row restriction | DONE | `ca52cbc06f03578d6c226ecfe30b10c56bd0cb9eca2270e510004128554a94f3` | bACC 36.16; H/M/T 68.42/33.88/6.24; GM 6.13; worst 0; dead 20 |
+| 4 | `v46-dev-c100-100-tailrow-classwise-seed0` | tailrow-classwise | isolate per-class anchors | DONE | `86b6d5c766d999766bcb853de4a5a394742b266f1ceeeb034d8fd134f781dc40` | bACC 35.40; H/M/T 66.85/31.94/7.52; GM 8.24; worst 0; dead 15 |
+| 5 | `v46-dev-c100-100-tangs-rho1-seed0` | tangs-v46, rho=1 | full method | DONE | `99a83cc295ad35f1de4e9fcc96a14d527282c90f664e4e84e9be79061bc57d3f` | bACC 35.88; H/M/T 67.88/33.35/6.48; GM 6.81; worst 0; dead 18 |
 
 Machine-readable gate: `results/v46-development-selection.json`.
 
 | Gate | Pass rule | Status |
 |---|---|---|
-| V46-G1 | full vs FixMatch: bACC >= +1.0 pp; Tail >= +2.0 pp; Head >= -2.0 pp; GM >= 0.0 pp | BLOCKED |
-| V46-G2 | dead-class count no worse than paired FixMatch | BLOCKED |
-| V46-G3 | full bACC >= legacy v4.5 +0.5 pp | BLOCKED |
-| V46-G4 | rho=1 bACC >= unbounded classwise +0.25 pp | BLOCKED |
-| V46-G5 | all split/partition hashes match; validation disjoint; 5,000 examples | BLOCKED |
+| V46-G1 | full vs FixMatch: bACC >= +1.0 pp; Tail >= +2.0 pp; Head >= -2.0 pp; GM >= 0.0 pp | STOP — bACC −0.82 pp and Tail −0.18 pp; Head −1.52 pp and GM +1.15 pp meet guards |
+| V46-G2 | dead-class count no worse than paired FixMatch | PASS — 18 vs 22 |
+| V46-G3 | full bACC >= legacy `tau=inf` +0.5 pp | STOP — −0.08 pp vs legacy |
+| V46-G4 | rho=1 bACC >= unbounded classwise +0.25 pp | PASS — +0.48 pp |
+| V46-G5 | all split/partition hashes match; validation disjoint; 5,000 examples | PASS — shared split/partition hashes recorded in selection artifact |
 
-Only all-PASS sets `allow_confirmatory_250k=true`. The next approved stage is
-then exactly two sequential full C100 runs: local FixMatch+observer and frozen
-`tangs-v46`. Every cross-dataset, oracle, or extra control run remains BLOCKED
-until that pair is reviewed.
+Gate artifact: `/root/rivermind-data/tangs/repo-v46-c5f7418/gradvax_experiments/results/v46-development-selection.json` (`status: STOP`, `allow_confirmatory_250k: false`). All five raw run directories contain `summary.json`, `development_metrics.jsonl`, and `checkpoint_last.pt`; the shared split hash is `38fc04c6d1d0dd9109879bba0445b40dd264f85b7ef198c640a68c45dac57ca9` and partition hash is `01b501e58a2ee7b38669a235098585d0e55ee3f84d952129aeff0a2a7e344bd0`.
+
+Only all-PASS sets `allow_confirmatory_250k=true`. This gate is STOP, so no
+250k run, cross-dataset run, oracle, or extra control is authorized. The
+completed evidence must next receive an independent-reviewer audit; it does
+not establish a v4.6 efficacy claim.
 
 ---
 
