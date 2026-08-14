@@ -2,7 +2,7 @@
 
 *Specification version: 4.6 — classwise tail-row recovery plan*
 *Aligned with FINAL_PROPOSAL.md v4.6 and EXPERIMENT_TRACKER.md v4.6*
-*Status: v4.6 code and the full local PyTorch suite are complete (53/53 PASS in `C:\lintao\envs\fixmatch`). A short CUDA smoke and five sequential 50k C100 development runs are TODO. Every 250k v4.6 run is BLOCKED.*
+*Status: v4.6 code, the full local PyTorch suite (53/53 PASS in `C:\lintao\envs\fixmatch`), and the target-server CUDA smoke are complete. The five sequential 50k C100 development runs are READY/TODO and unstarted. Every 250k v4.6 run is BLOCKED.*
 
 ---
 
@@ -76,6 +76,19 @@ torchvision 0.20.1, CUDA 11.8, and the RTX 4060; all 53 tests passed, including
 analytical-row/autograd parity, no-op identity, tail-row-only replacement, and
 validation-disjointness. The remote server must still repeat these checks
 before paid execution because its package and GPU environment may differ.
+
+### 0.3.1 Target-server audit and smoke — DONE (2026-08-14)
+
+The RTX 4090 target passed `python -m pytest -q` (53 passed in 4.01 s) with Python 3.11.10, torch 2.3.1+cu121, torchvision 0.18.1+cu121, and CUDA 12.1. The detached deployment source is `c5f74189d81a00402cd183a49cc4dc74d3ddf5b0` in `/root/rivermind-data/tangs/repo-v46-c5f7418`; its cache symlink points only to the verified persistent dataset volume.
+
+| Check | Status | Artifact | Config hash / finding |
+|---|---|---|---|
+| FixMatch observer, 5 steps | DONE | `/root/rivermind-data/tangs/repo-v46-c5f7418/gradvax_experiments/results/v46-smoke-c100-fixmatch-observer-seed0` | `7f8c3ce7443e0162d1b5299ef454f35b10d7e80c6b9ae91c233f04b18ce14ebd`; finite, 5 `observer-only` records, zero nonzero modifications |
+| Full `tangs-v46`, rho=1, 5 steps | DONE | `/root/rivermind-data/tangs/repo-v46-c5f7418/gradvax_experiments/results/v46-smoke-c100-tangs-rho1-seed0` | `98408fa20e4f3a0aa7b34ae2a30b29b768283429bcbc836d396eabf0bf2a754c`; finite; all steps are warm-up |
+| Controlled checkpoint/resume | DONE | `/root/rivermind-data/tangs/repo-v46-c5f7418/gradvax_experiments/results/v46-smoke-c100-tangs-rho1-resume-v2-seed0` | `cc52d447219a3802b0518afceb2d32f0ec91a7907c5305718e2dbc02d99d91c2`; interrupted at checkpoint step 2, resumed to step 5; controller/RNG/model/optimizer/EMA stored; finite strictly increasing JSONL |
+| Timing-missed resume attempt | RETAINED-INVALID | `/root/rivermind-data/tangs/repo-v46-c5f7418/gradvax_experiments/results/v46-smoke-c100-tangs-rho1-resume-seed0` | `89dc6007160bf217dd4ec036cc23c9b19aaf99cd0503ab45fbb0e4eaf28f7040`; SIGTERM arrived after completion, so not resume evidence |
+
+The smoke rows prove target-environment readiness only; no smoke metric may be used for method selection. They unlock scheduling eligibility, not automatic launch: the fixed 50k queue remains unstarted pending explicit user authority.
 
 ### 0.4 Frozen development gate
 

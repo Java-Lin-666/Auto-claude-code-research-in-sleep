@@ -1,8 +1,20 @@
 # TANGS: Tail-Anchored Norm-Aware Gradient Surgery for Long-Tailed Semi-Supervised Learning
 
 *Specification version: 4.6 — classwise tail-row recovery after the v4.5 first matrix*
-*Status: the v4.5 C10/C100 results are archived evidence, not support for the current method. The v4.6 implementation and complete local PyTorch test suite (53/53 PASS) are complete; a short CUDA smoke and the five-run C100 development gate are pending. No v4.6 confirmatory run is authorized.*
+*Status: the v4.5 C10/C100 results are archived evidence, not support for the current method. The v4.6 implementation, complete local test suite (53/53 PASS), and target-server CUDA smoke are complete; the fixed five-run C100 development gate is ready but not started. No v4.6 confirmatory run is authorized.*
 *Legacy working name: GradVax. The paper-facing name is TANGS to avoid confusion with Gradient Vaccine (GradVac, ICLR 2021).*
+
+---
+
+## Target-Server CUDA Smoke Record (2026-08-14)
+
+The target RTX 4090 environment passed `python -m pytest -q` (**53 passed in 4.01 s**) under Python 3.11.10, torch 2.3.1+cu121, torchvision 0.18.1+cu121, and CUDA 12.1. The v4.6 source was deployment commit `c5f74189d81a00402cd183a49cc4dc74d3ddf5b0` in `/root/rivermind-data/tangs/repo-v46-c5f7418`; cached datasets were reused from the persistent volume and no legacy STL task was restored.
+
+- **Observer DONE:** `/root/rivermind-data/tangs/repo-v46-c5f7418/gradvax_experiments/results/v46-smoke-c100-fixmatch-observer-seed0`, config `7f8c3ce7443e0162d1b5299ef454f35b10d7e80c6b9ae91c233f04b18ce14ebd`. Five steps completed; all serialized values were finite and all five observer records had zero gradient modification.
+- **Full DONE:** `/root/rivermind-data/tangs/repo-v46-c5f7418/gradvax_experiments/results/v46-smoke-c100-tangs-rho1-seed0`, config `98408fa20e4f3a0aa7b34ae2a30b29b768283429bcbc836d396eabf0bf2a754c`. Five steps completed with finite diagnostics, status, and summary. It remained in warm-up, so it is not efficacy evidence.
+- **Controlled resume DONE:** `/root/rivermind-data/tangs/repo-v46-c5f7418/gradvax_experiments/results/v46-smoke-c100-tangs-rho1-resume-v2-seed0`, config `cc52d447219a3802b0518afceb2d32f0ec91a7907c5305718e2dbc02d99d91c2`. The process was stopped after a step-2 checkpoint and `--resume auto` completed step 5 with controller/RNG/model/optimizer/EMA state restored and strictly increasing finite JSONL steps. The event records the expected non-bit-exact DataLoader prefetch limitation.
+
+The earlier timing-missed interruption artifact is deliberately retained at `/root/rivermind-data/tangs/repo-v46-c5f7418/gradvax_experiments/results/v46-smoke-c100-tangs-rho1-resume-seed0`, config `89dc6007160bf217dd4ec036cc23c9b19aaf99cd0503ab45fbb0e4eaf28f7040`; it completed before SIGTERM and is not used as resume evidence. Smoke results are infrastructure evidence only. The 50k queue remains unstarted and 250k remains blocked by the frozen development gate.
 
 ---
 

@@ -2,7 +2,7 @@
 
 *Specification version: 4.6 — classwise tail-row recovery ledger*
 *Last updated: 2026-08-14*
-*Status: v4.5 first matrix archived; v4.6 implementation and the complete local PyTorch suite are DONE (53/53 PASS), a short target-environment CUDA smoke and five sequential C100 development cells are TODO, and all 250k v4.6 cells are BLOCKED.*
+*Status: v4.5 first matrix archived; v4.6 implementation, complete local PyTorch suite (53/53 PASS), and target-environment CUDA smoke are DONE. The five sequential C100 development cells are READY/TODO but unstarted, and all 250k v4.6 cells are BLOCKED.*
 *Aligned files: FINAL_PROPOSAL.md v4.6, EXPERIMENT_PLAN.md v4.6, reported_results_from_papers.md v4.6 recovery policy*
 *Legacy working name: GradVax; all new run IDs and paper text use TANGS.*
 
@@ -29,12 +29,25 @@ experiments use explicit v4.6 names.
 | ID | Check | Status | Evidence / next action |
 |---|---|---|---|
 | V46-CODE | classwise tail-row controller, analytical rows, correction budget, diagnostics | DONE | `gradvax_experiments/tangs/surgery.py`, `trainer.py`, config v4.6 |
-| V46-DATA | balanced unused-train C100 development split | DONE-CODE | `tangs/data.py`; server runtime verification pending |
+| V46-DATA | balanced unused-train C100 development split | DONE-SERVER | `tangs/data.py`; persistent CIFAR cache read successfully on target server |
 | V46-QUEUE | single-GPU resumable development and gated confirmatory scripts | DONE | `scripts/run_v46_development.sh`, `run_required_v46.sh` |
 | V46-LOCAL-TEST | full pytest suite in registered local FixMatch environment | DONE | 53/53 passed in 5.24 s; Python 3.10.19, torch 2.5.1, torchvision 0.20.1, CUDA 11.8, RTX 4060 |
 | V46-TORCH-PARITY | analytical rows equal autograd, row-only mutation, correction cap, observer no-op | DONE-LOCAL | `test_tailrow_v46.py`; repeat on target server before execution |
-| V46-CUDA-SMOKE | observer/full five-step CUDA, resume, finite logs and memory | TODO | required before any 50k cell |
+| V46-CUDA-SMOKE | observer/full five-step CUDA, resume, finite logs and memory | DONE | target artifacts and config hashes recorded in §0.2.1; 53 server tests PASS |
 | V46-INDEPENDENT-AUDIT | different model family audits code and raw artifacts | BLOCKED | after server integrity artifacts exist |
+
+### 0.2.1 Target server audit — DONE (2026-08-14)
+
+Target: `jupyter-4fdh8ohtracfw7gp`, one idle NVIDIA GeForce RTX 4090 (24,564 MiB), driver 590.48.01. Persistent volume `/root/rivermind-data/tangs` contains the C10/C100/STL caches, archive, old clean v4.5 repo, and venv. The v4.6 work was isolated in `/root/rivermind-data/tangs/repo-v46-c5f7418` at deployment commit `c5f74189d81a00402cd183a49cc4dc74d3ddf5b0`; no old artifact was deleted and no v4.5 STL checkpoint was resumed. Environment: Python 3.11.10, torch 2.3.1+cu121, torchvision 0.18.1+cu121, CUDA 12.1. `python -m pytest -q`: **53 passed in 4.01 s**.
+
+| Smoke item | Status | Artifact | Config hash / verified result |
+|---|---|---|---|
+| Observer (FixMatch, 5 steps) | DONE | `/root/rivermind-data/tangs/repo-v46-c5f7418/gradvax_experiments/results/v46-smoke-c100-fixmatch-observer-seed0` | `7f8c3ce7443e0162d1b5299ef454f35b10d7e80c6b9ae91c233f04b18ce14ebd`; completed, all finite; `observer-only` ×5; no nonzero gradient modification |
+| Full (`tangs-v46`, rho=1, 5 steps) | DONE | `/root/rivermind-data/tangs/repo-v46-c5f7418/gradvax_experiments/results/v46-smoke-c100-tangs-rho1-seed0` | `98408fa20e4f3a0aa7b34ae2a30b29b768283429bcbc836d396eabf0bf2a754c`; completed and finite; warm-up-only smoke |
+| Controlled interrupt + `--resume auto` | DONE | `/root/rivermind-data/tangs/repo-v46-c5f7418/gradvax_experiments/results/v46-smoke-c100-tangs-rho1-resume-v2-seed0` | `cc52d447219a3802b0518afceb2d32f0ec91a7907c5305718e2dbc02d99d91c2`; step-2 checkpoint, controller/RNG/model/optimizer/EMA saved, resumed to completed step 5; finite, strictly increasing JSONL |
+| Interrupt sent after completion | RETAINED-INVALID | `/root/rivermind-data/tangs/repo-v46-c5f7418/gradvax_experiments/results/v46-smoke-c100-tangs-rho1-resume-seed0` | `89dc6007160bf217dd4ec036cc23c9b19aaf99cd0503ab45fbb0e4eaf28f7040`; keep for audit, not accepted as resume validation |
+
+The valid resume event records the expected limitation that DataLoader worker/prefetch state is not serializable; this is not a false bit-exact claim. The new smoke metrics are infrastructure-only and have not been entered as development or paper results. The five 50k cells remain TODO until explicitly started; the machine-readable 50k gate still controls all 250k work.
 
 ### 0.3 Single-GPU development ledger
 

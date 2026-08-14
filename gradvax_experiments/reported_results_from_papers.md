@@ -51,6 +51,10 @@ For v4.6:
 No cross-dataset v4.6 main-table claim is allowed until the paired C100 core
 stage passes and later protocol rows are separately authorized.
 
+### Target-Server Smoke Evidence Status (2026-08-14)
+
+Target-environment readiness is complete but is **not** a literature or local efficacy result. On the RTX 4090 deployment commit `c5f74189d81a00402cd183a49cc4dc74d3ddf5b0`, the server suite passed 53 tests. The observer smoke is DONE at `/root/rivermind-data/tangs/repo-v46-c5f7418/gradvax_experiments/results/v46-smoke-c100-fixmatch-observer-seed0` (config `7f8c3ce7443e0162d1b5299ef454f35b10d7e80c6b9ae91c233f04b18ce14ebd`), the full warm-up smoke is DONE at `/root/rivermind-data/tangs/repo-v46-c5f7418/gradvax_experiments/results/v46-smoke-c100-tangs-rho1-seed0` (config `98408fa20e4f3a0aa7b34ae2a30b29b768283429bcbc836d396eabf0bf2a754c`), and valid checkpoint/resume is DONE at `/root/rivermind-data/tangs/repo-v46-c5f7418/gradvax_experiments/results/v46-smoke-c100-tangs-rho1-resume-v2-seed0` (config `cc52d447219a3802b0518afceb2d32f0ec91a7907c5305718e2dbc02d99d91c2`). All relevant serialized values were finite; the observer had zero modifications. The completed-before-SIGTERM artifact is preserved but invalid for resume evidence at `/root/rivermind-data/tangs/repo-v46-c5f7418/gradvax_experiments/results/v46-smoke-c100-tangs-rho1-resume-seed0` (config `89dc6007160bf217dd4ec036cc23c9b19aaf99cd0503ab45fbb0e4eaf28f7040`). None of these records alters a reported paper value or authorizes a main-table claim; the paired 50k development gate is still unstarted and 250k remains blocked pending its PASS.
+
 ## Primary Source Registry
 
 | ID | Primary source | Numerical location used here | Reported uncertainty | Audit state |

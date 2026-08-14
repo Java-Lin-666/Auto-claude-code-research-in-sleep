@@ -120,11 +120,22 @@ Set-Location D:\Auto-claude-code-research-in-sleep\gradvax_experiments
 Python `py_compile` 通过；三个 Bash 脚本使用
 `C:\msys64\usr\bin\bash.exe -n` 检查通过。
 
-没有启动任何 v4.6 smoke、50k 或 250k 训练。
+本机阶段没有启动 v4.6 训练；目标服务器 CUDA smoke 已于 2026-08-14 完成并通过，五项 50k 开发队列仍未启动，任何 250k 训练仍被门禁阻止。完整证据见下文。
 
-## 5. 接手后的第一项工作：服务器 CUDA smoke
+### 2026-08-14 目标服务器环境审计与 CUDA smoke（DONE）
 
-用户已确认 CUDA smoke 可以在服务器做。意义是验证目标执行环境中的
+服务器为 `jupyter-4fdh8ohtracfw7gp`，单张 NVIDIA GeForce RTX 4090（24,564 MiB）；驱动 590.48.01。持久卷 `/root/rivermind-data/tangs` 保留了 CIFAR-10、CIFAR-100、STL-10 缓存、旧 repo、venv 与 first-try archive；v4.5 STL checkpoint 没有恢复。v4.6 在独立 worktree `/root/rivermind-data/tangs/repo-v46-c5f7418` 运行，代码为 `c5f74189d81a00402cd183a49cc4dc74d3ddf5b0`；数据 cache 只读共享自旧 repo。目标环境为 Python 3.11.10、torch 2.3.1+cu121、torchvision 0.18.1+cu121、CUDA 12.1；完整 `python -m pytest -q` 为 **53 passed in 4.01 s**。
+
+- observer smoke：DONE，`/root/rivermind-data/tangs/repo-v46-c5f7418/gradvax_experiments/results/v46-smoke-c100-fixmatch-observer-seed0`，config hash `7f8c3ce7443e0162d1b5299ef454f35b10d7e80c6b9ae91c233f04b18ce14ebd`。5/5 steps 完成，diagnostics/summary/status 均为 finite，5 个样本全部为 `observer-only`，`nonzero_gradient_modification_steps=0`。
+- full smoke：DONE，`/root/rivermind-data/tangs/repo-v46-c5f7418/gradvax_experiments/results/v46-smoke-c100-tangs-rho1-seed0`，config hash `98408fa20e4f3a0aa7b34ae2a30b29b768283429bcbc836d396eabf0bf2a754c`。5/5 steps 完成，diagnostics/summary/status 均为 finite；五步均在 warm-up，故不作为方法效力或实际 surgery 触发率证据。
+- 受控恢复：DONE，`/root/rivermind-data/tangs/repo-v46-c5f7418/gradvax_experiments/results/v46-smoke-c100-tangs-rho1-resume-v2-seed0`，config hash `cc52d447219a3802b0518afceb2d32f0ec91a7907c5305718e2dbc02d99d91c2`。在 step 2 checkpoint 后终止，状态为 `interrupted`，checkpoint 含 controller/RNG/model/optimizer/EMA；`--resume auto` 从 step 2 继续至 step 5，最终 completed，JSONL steps 为 1,3,4,5、严格递增且 finite。事件明确记录 DataLoader worker/prefetch state 不可序列化，因此不声称 loader bit-exact。
+- 保留的无效尝试（不可当作恢复证据）：`/root/rivermind-data/tangs/repo-v46-c5f7418/gradvax_experiments/results/v46-smoke-c100-tangs-rho1-resume-seed0`，config hash `89dc6007160bf217dd4ec036cc23c9b19aaf99cd0503ab45fbb0e4eaf28f7040`。SIGTERM 在 5 steps 已完成后才到达；artifact 保留且不覆盖。
+
+上述 smoke 只证明目标环境、checkpoint/resume 和产物链路可用，**不构成精度证据**。因此五项 50k 队列现在仅为 READY/TODO，需再次取得明确启动授权；250k 仍只允许在 machine-readable 50k gate PASS 后进行。
+
+## 5. 已完成的服务器 CUDA smoke
+
+用户已确认 CUDA smoke 可以在服务器做。其意义是验证目标执行环境中的
 驱动、CUDA、DataLoader、多进程、数据路径、显存、checkpoint/resume 和完整
 训练链路，不用于判断精度。数据已缓存时，全部 smoke 预计 5–15 分钟。
 
@@ -132,7 +143,7 @@ Python `py_compile` 通过；三个 Bash 脚本使用
 新的凭据。已知旧记录提示服务器 venv 曾位于：
 `/root/rivermind-data/tangs/venv`，但接手 AI 必须先只读确认实际路径。
 
-服务器顺序：
+本轮已按以下顺序完成并通过：
 
 1. 检查 repo、分支/dirty state、Python、torch、torchvision、CUDA、GPU、数据缓存。
 2. 在服务器项目环境执行完整 `python -m pytest -q`；必须全部 PASS。
@@ -291,9 +302,6 @@ difference 才是 v4.6 的主要因果比较。
 - tests：`gradvax_experiments/tests/test_tailrow_v46.py`、
   `test_v46_development.py` 及其余 tests。
 
-## 12. 给接手 AI 的首条建议
+## 12. 给接手 AI 的后续建议
 
-不要继续无依据地调 tau/beta/warm-up。先完成服务器环境审计与两个 5-step
-v4.6 smoke；把原始路径、配置哈希和检查结论写回 tracker。通过后运行固定的
-五项 50k 单卡队列并监控。第一个真正决定研究方向的信息是 paired C100
-development gate，而不是继续讨论参数直觉。
+不要继续无依据地调 tau/beta/warm-up。服务器环境审计与两个 5-step v4.6 smoke 已经通过，且原始路径、配置哈希和检查结论已写回 tracker。现在等待用户明确授权后才运行固定的五项 50k 单卡队列并监控。第一个真正决定研究方向的信息是 paired C100 development gate，而不是继续讨论参数直觉。
