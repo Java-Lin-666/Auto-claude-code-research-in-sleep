@@ -8,7 +8,7 @@ from typing import Any
 
 
 CDMAD_COMMIT = "7cd732b4615b9d94934a9197e69c6775496fb5ee"
-CONFIG_VERSION = "4.7"
+CONFIG_VERSION = "4.8"
 
 
 @dataclass(frozen=True)
@@ -80,6 +80,7 @@ METHODS = {
     "tailrow-classwise",
     "tangs-v46",
     "tangs-v47",
+    "tangs-v48",
     "oracle-fixmatch",
     "oracle-tangs",
     "oracle-tangs-v46",
@@ -97,6 +98,7 @@ TAILROW_METHODS = {
     "tailrow-classwise",
     "tangs-v46",
     "tangs-v47",
+    "tangs-v48",
     "oracle-tangs-v46",
 }
 
@@ -143,6 +145,8 @@ class RunConfig:
     score_base_alpha: float
     score_extra_tail_alpha: float
     score_anchor_threshold: float
+    score_anchor_margin: float
+    score_confidence_ceiling: float
     tailrow_observer: bool
     tangs_warmup_steps: int
     min_tail_support: int
@@ -176,10 +180,44 @@ def build_run_config(args: Any) -> RunConfig:
     correction_rho = float(getattr(args, "tangs_correction_rho", 1.0))
     if math.isnan(correction_rho) or correction_rho <= 0:
         raise ValueError("--tangs-correction-rho must be positive or inf.")
-    score_uniform_la_alpha = float(getattr(args, "score_uniform_la_alpha", 0.85))
-    score_base_alpha = float(getattr(args, "score_base_alpha", 0.65))
-    score_extra_tail_alpha = float(getattr(args, "score_extra_tail_alpha", 0.25))
-    score_anchor_threshold = float(getattr(args, "score_anchor_threshold", 0.75))
+    defaults = (
+        {
+            "uniform_la_alpha": 0.80,
+            "base_alpha": 0.70,
+            "extra_tail_alpha": 0.40,
+            "anchor_threshold": 0.775,
+            "anchor_margin": 0.05,
+            "confidence_ceiling": 0.90,
+        }
+        if args.method == "tangs-v48"
+        else {
+            "uniform_la_alpha": 0.85,
+            "base_alpha": 0.65,
+            "extra_tail_alpha": 0.25,
+            "anchor_threshold": 0.75,
+            "anchor_margin": 0.0,
+            "confidence_ceiling": 1.0,
+        }
+    )
+
+    def score_value(argument: str, default: str) -> float:
+        value = getattr(args, argument, None)
+        return float(defaults[default] if value is None else value)
+
+    score_uniform_la_alpha = score_value(
+        "score_uniform_la_alpha", "uniform_la_alpha"
+    )
+    score_base_alpha = score_value("score_base_alpha", "base_alpha")
+    score_extra_tail_alpha = score_value(
+        "score_extra_tail_alpha", "extra_tail_alpha"
+    )
+    score_anchor_threshold = score_value(
+        "score_anchor_threshold", "anchor_threshold"
+    )
+    score_anchor_margin = score_value("score_anchor_margin", "anchor_margin")
+    score_confidence_ceiling = score_value(
+        "score_confidence_ceiling", "confidence_ceiling"
+    )
     if not math.isfinite(score_uniform_la_alpha) or score_uniform_la_alpha < 0:
         raise ValueError("--score-uniform-la-alpha must be finite and non-negative.")
     if not math.isfinite(score_base_alpha) or score_base_alpha < 0:
@@ -188,6 +226,10 @@ def build_run_config(args: Any) -> RunConfig:
         raise ValueError("--score-extra-tail-alpha must be finite and non-negative.")
     if not -1.0 <= score_anchor_threshold <= 1.0:
         raise ValueError("--score-anchor-threshold must be in [-1, 1].")
+    if not math.isfinite(score_anchor_margin) or not 0.0 <= score_anchor_margin <= 2.0:
+        raise ValueError("--score-anchor-margin must be finite and in [0, 2].")
+    if not math.isfinite(score_confidence_ceiling) or not 0.0 <= score_confidence_ceiling <= 1.0:
+        raise ValueError("--score-confidence-ceiling must be finite and in [0, 1].")
     protocol = PROTOCOLS[args.protocol]
     deviations: list[str] = []
 
@@ -256,6 +298,8 @@ def build_run_config(args: Any) -> RunConfig:
         score_base_alpha=score_base_alpha,
         score_extra_tail_alpha=score_extra_tail_alpha,
         score_anchor_threshold=score_anchor_threshold,
+        score_anchor_margin=score_anchor_margin,
+        score_confidence_ceiling=score_confidence_ceiling,
         tailrow_observer=bool(getattr(args, "tailrow_observer", False)),
         tangs_warmup_steps=2500,
         min_tail_support=2,

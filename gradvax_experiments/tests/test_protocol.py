@@ -40,8 +40,8 @@ def arguments(**overrides):
 
 
 class ProtocolTests(unittest.TestCase):
-    def test_protocol_version_matches_v47_documents(self):
-        self.assertEqual(CONFIG_VERSION, "4.7")
+    def test_protocol_version_matches_v48_documents(self):
+        self.assertEqual(CONFIG_VERSION, "4.8")
 
     def test_registered_counts_match_cdmad_formula(self):
         c10 = PROTOCOLS["P-C10-100"]
@@ -111,6 +111,17 @@ class ProtocolTests(unittest.TestCase):
         self.assertEqual(config.score_base_alpha, 0.65)
         self.assertEqual(config.score_extra_tail_alpha, 0.25)
         self.assertEqual(config.score_anchor_threshold, 0.75)
+        self.assertEqual(config.score_anchor_margin, 0.0)
+        self.assertEqual(config.score_confidence_ceiling, 1.0)
+
+    def test_v48_score_defaults_are_isolated_from_v47(self):
+        config = build_run_config(arguments(mode="development", method="tangs-v48"))
+        self.assertEqual(config.score_uniform_la_alpha, 0.80)
+        self.assertEqual(config.score_base_alpha, 0.70)
+        self.assertEqual(config.score_extra_tail_alpha, 0.40)
+        self.assertEqual(config.score_anchor_threshold, 0.775)
+        self.assertEqual(config.score_anchor_margin, 0.05)
+        self.assertEqual(config.score_confidence_ceiling, 0.90)
 
     def test_oracle_control_is_cifar100_only(self):
         with self.assertRaisesRegex(ValueError, "registered only"):

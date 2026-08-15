@@ -353,6 +353,7 @@ class TailRowController:
         "tailrow-classwise",
         "tangs-v46",
         "tangs-v47",
+        "tangs-v48",
         "oracle-tangs-v46",
     }
 
@@ -615,7 +616,7 @@ class TailRowController:
             stats["tailrow_mean_anchor_age"] = float(valid_ages.float().mean())
             stats["tailrow_max_anchor_age"] = int(valid_ages.max())
 
-        if self.method in {"tailrow-observer", "tangs-v47"}:
+        if self.method in {"tailrow-observer", "tangs-v47", "tangs-v48"}:
             return SurgeryResult(base_gradient, False, "observer-only", stats)
         if step <= self.warmup_steps:
             return SurgeryResult(base_gradient, False, "warmup", stats)

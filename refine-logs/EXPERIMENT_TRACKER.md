@@ -1,14 +1,68 @@
 # TANGS Experiment Tracker
 
-*Specification version: 4.7 — tail-anchor-gated score correction ledger*
+*Specification version: 4.8 — selective score-correction ledger*
 *Last updated: 2026-08-15*
-*Status: v4.5 and v4.6 gradient-surgery methods are archived STOP results. The old-checkpoint v4.7 screen remains PROVISIONAL. The fresh server C100 50k integrated v4.7 run completed normally but its machine gate is STOP; all 250k work is BLOCKED. The complete verified local snapshot is recorded as third try.*
-*Aligned files: FINAL_PROPOSAL.md v4.7, EXPERIMENT_PLAN.md v4.7, reported_results_from_papers.md v4.7 policy*
-*Legacy working name: GradVax. TANGS v4.7 means Tail-ANchor-Gated Scores.*
+*Status: v4.5/v4.6/v4.7 are archived STOP results. v4.8 is PROVISIONAL after passing all original gates on two archived 50k realizations. Local tests are 61/61 and local CUDA smoke is DONE. Only the fresh seed-1 C100 50k holdout is pending; all 250k work is BLOCKED.*
+*Aligned files: FINAL_PROPOSAL.md v4.8, EXPERIMENT_PLAN.md v4.8, reported_results_from_papers.md v4.8 policy*
+*Legacy working name: GradVax. TANGS v4.8 means selective Tail-ANchor-Gated Scores.*
 
 ---
 
-## 0A. v4.7 Dashboard (Controlling)
+## 0B. v4.8 Dashboard (Controlling)
+
+### 0B.1 Failure-driven change
+
+| Item | Observation | Decision |
+|---|---:|---|
+| Genuine v4.7 50k | bACC 39.80; Head -2.30 vs raw; bACC +0.38 vs LA | STOP v4.7 |
+| v4.7 broad anchor gate | about 67.56% eligible on fresh checkpoint | add uniqueness and confidence filters |
+| v4.8 eligibility / flips | 12.36% / 5.06% fresh; 11.70% / 4.86% archive | selective intervention restored |
+| v4.8 robust grid | 110 fresh passes; 21 pass both realizations | freeze one rule; require unseen holdout |
+
+### 0B.2 Frozen retrospective ledger
+
+| Realization | Raw bACC/Head | LA-0.80 bACC/Head/Tail | v4.8 bACC/Head/Medium/Tail/GM | Dead | Status |
+|---|---:|---:|---:|---:|---|
+| Fresh integrated seed-0 | 36.14/68.61 | 39.22/66.85/12.30 | **39.86**/66.79/37.18/**15.70**/20.49 | 3 | SIGNAL |
+| Archived observer seed-0 | 36.70/69.39 | 39.20/67.70/11.09 | **39.84**/67.82/37.18/**14.61**/20.40 | 4 | SIGNAL |
+
+Frozen parameters: uniform LA 0.80, base 0.70, extra 0.40, anchor threshold
+0.775, best-vs-second anchor margin 0.05, raw-confidence ceiling 0.90.
+Both rows pass the unchanged raw and LA efficacy thresholds. They remain
+retrospective and only authorize a new seed-1 holdout.
+
+Artifacts:
+
+- robust grid: `results/third_try_2026-08-15/v48-logit-gap-robust-search.json`;
+- production-scorer freeze: `results/third_try_2026-08-15/v48-retrospective-selection.json`;
+- implementation: `tangs/calibration.py`, method `tangs-v48`;
+- local smoke: `results/v48-local-smoke-c100-seed1`, config `a5e4e6bffb726936cb095950fd961b0d08a83dee766197399c273c993fea4405`.
+
+### 0B.3 Integrity and single-GPU queue
+
+| ID | Item | Status | Evidence / condition |
+|---|---|---|---|
+| V48-CODE | isolated method/config/scorer/gates | DONE | v4.5-v4.7 identifiers retained |
+| V48-LOCAL-TEST | full suite | DONE | 61/61 |
+| V48-LOCAL-SMOKE | five-step CUDA, seed 1 | DONE | zero gradient modifications; all summaries finite |
+| V48-SERVER-SMOKE | target tests and five-step CUDA | TODO | must precede paid holdout |
+| V48-HOLDOUT | `v48-holdout-c100-100-seed1`, 50k | BLOCKED-UNTIL-SMOKE | only paid run currently authorized |
+| V48-C100-250K | seed-0 confirmatory | BLOCKED | only after holdout PASS |
+| V48-C10-250K | seed-0 transfer | BLOCKED | required after C100 PASS |
+| V48-STL20-250K | seed-0 transfer | BLOCKED | required after C100 PASS |
+| V48-INDEPENDENT-AUDIT | different model family | TODO | required before paper claim |
+
+The holdout analyzer rejects seed 0, reused split hashes, incomplete
+diagnostics, any gradient modification, parameter drift, and any original
+efficacy failure. A holdout STOP closes v4.8; a PASS only unlocks the serial
+C100 → C10 → STL10-20 confirmatory script.
+
+---
+
+## 0A. v4.7 Dashboard (Historical)
+
+**Historical:** the fresh integrated v4.7 50k gate is STOP. This dashboard no
+longer authorizes execution.
 
 Every v4.5/v4.6 status below remains historical. This dashboard alone
 authorizes new execution.

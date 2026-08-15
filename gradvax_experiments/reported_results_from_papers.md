@@ -1,7 +1,7 @@
 # Reported Results From Primary Papers
 
-*Specification version: 4.7 score-calibration policy — literature registry unchanged, local post-hoc controls strengthened*
-*Aligned with the TANGS v4.7 proposal, plan, and tracker.*
+*Specification version: 4.8 selective score-calibration policy — literature registry unchanged*
+*Aligned with the TANGS v4.8 proposal, plan, and tracker.*
 *Purpose: preserve audited paper-reported numbers used as citation-marked baselines in the TANGS main comparison table. Local development status may be noted only to track what remains; it is never a source for a reported-baseline row.*
 
 ## Evidence and Citation Rules
@@ -22,7 +22,36 @@ Any source-registry row containing `[VERIFY]` is quarantined: its retained numer
 
 The repository currently does not contain the source PDFs represented by the old aliases paper1–paper5. The official URLs below are therefore the traceable sources; if local PDFs are added later, record their paths and SHA256 values.
 
-### v4.7 Local-Comparison Policy (Controlling)
+### v4.8 Local-Comparison Policy (Controlling)
+
+v4.7 is a genuine development STOP and must not be reported as successful.
+v4.8 retains exact FixMatch training and adds no gradient intervention. Its
+scoring parameters are frozen at uniform-LA 0.80, base prior 0.70, extra tail
+0.40, anchor cosine 0.775, top-two anchor margin 0.05, and raw-confidence
+ceiling 0.90.
+
+The two seed-0 development re-evaluations are retrospective selection evidence
+only. Their v4.8 bACC values (39.86 and 39.84) and corresponding LA-0.80 values
+(39.22 and 39.20) must never enter a paper main table or be described as an
+independent validation. They authorize only the preregistered seed-1 C100 50k
+holdout. The holdout also remains development evidence even if it passes.
+
+A paper-facing efficacy row requires, in order: seed-1 holdout PASS, frozen
+C100 seed-0 250k PASS, then the required C10-100 and STL10-20 seed-0 transfer
+runs. Raw FixMatch, uniform LA, and v4.8 scores must come from the same final
+EMA checkpoint for every local row. Published baselines remain citation-marked
+context and must not be described as local reproductions.
+
+The v4.8 novelty claim is the combination of supervised tail-anchor
+compatibility, anchor-identity separation, and uncertainty-limited selective
+tail correction. The global prior term is established logit adjustment and is
+not novel. Any comparison against LA must use the frozen head-compliant
+`alpha=0.80` control and disclose Medium-class changes.
+
+### v4.7 Local-Comparison Policy (Historical)
+
+**Historical:** the integrated v4.7 development gate returned STOP. This
+policy is retained only for provenance and cannot authorize experiments.
 
 TANGS v4.7 is a deterministic score-calibration method, not a training-gradient
 method. The v4.5 and v4.6 gradient-surgery results remain archived failures and

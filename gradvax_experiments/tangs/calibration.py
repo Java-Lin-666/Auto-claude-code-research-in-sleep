@@ -1,4 +1,4 @@
-"""Tail-anchor-gated score correction for TANGS v4.7."""
+"""Tail-anchor-gated score correction for TANGS v4.7 and v4.8."""
 
 from __future__ import annotations
 
@@ -17,6 +17,8 @@ def anchor_gated_logits(
     base_alpha: float = 0.65,
     extra_tail_alpha: float = 0.25,
     anchor_threshold: float = 0.75,
+    anchor_margin: float = 0.0,
+    confidence_ceiling: float = 1.0,
     eps: float = 1e-12,
 ) -> torch.Tensor:
     """Apply prior correction plus one compatibility-gated tail boost.
@@ -39,6 +41,10 @@ def anchor_gated_logits(
         raise ValueError("score-correction strengths must be non-negative.")
     if not -1.0 <= anchor_threshold <= 1.0:
         raise ValueError("anchor_threshold must be a cosine in [-1, 1].")
+    if not 0.0 <= anchor_margin <= 2.0:
+        raise ValueError("anchor_margin must be in [0, 2].")
+    if not 0.0 <= confidence_ceiling <= 1.0:
+        raise ValueError("confidence_ceiling must be in [0, 1].")
 
     counts = labeled_counts.to(device=logits.device, dtype=logits.dtype)
     if bool((counts <= 0).any()) or not bool(torch.isfinite(counts).all()):
@@ -63,10 +69,20 @@ def anchor_gated_logits(
     valid_indices = valid.nonzero().flatten()
     prototypes = F.normalize(-anchors[valid_indices, :-1], dim=1, eps=eps)
     similarities = F.normalize(flat_features, dim=1, eps=eps) @ prototypes.T
-    best_similarity, best_local = similarities.max(dim=1)
+    top_k = min(2, similarities.shape[1])
+    top_similarity, top_local = similarities.topk(k=top_k, dim=1)
+    best_similarity = top_similarity[:, 0]
+    best_local = top_local[:, 0]
+    if top_k == 1:
+        similarity_margin = torch.full_like(best_similarity, float("inf"))
+    else:
+        similarity_margin = top_similarity[:, 0] - top_similarity[:, 1]
     tail_ids = torch.tensor(tail_classes, dtype=torch.long, device=logits.device)
     best_class = tail_ids[valid_indices[best_local]]
+    raw_confidence = F.softmax(logits, dim=1).max(dim=1).values
     eligible = best_similarity >= anchor_threshold
+    eligible &= similarity_margin >= anchor_margin
+    eligible &= raw_confidence <= confidence_ceiling
     if not bool(eligible.any()) or extra_tail_alpha == 0:
         return adjusted
 

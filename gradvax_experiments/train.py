@@ -61,26 +61,38 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--score-uniform-la-alpha",
         type=float,
-        default=0.85,
-        help="v4.7 frozen uniform-logit-adjustment control strength.",
+        default=None,
+        help="Frozen uniform-LA control strength; method-specific when omitted.",
     )
     parser.add_argument(
         "--score-base-alpha",
         type=float,
-        default=0.65,
-        help="v4.7 global labeled-prior correction strength.",
+        default=None,
+        help="Global labeled-prior correction; method-specific when omitted.",
     )
     parser.add_argument(
         "--score-extra-tail-alpha",
         type=float,
-        default=0.25,
-        help="v4.7 extra correction for the single anchor-compatible tail class.",
+        default=None,
+        help="Extra single-tail correction; method-specific when omitted.",
     )
     parser.add_argument(
         "--score-anchor-threshold",
         type=float,
-        default=0.75,
-        help="v4.7 minimum cosine for the extra tail correction.",
+        default=None,
+        help="Minimum tail-anchor cosine; method-specific when omitted.",
+    )
+    parser.add_argument(
+        "--score-anchor-margin",
+        type=float,
+        default=None,
+        help="Minimum cosine gap between the best and second tail anchors.",
+    )
+    parser.add_argument(
+        "--score-confidence-ceiling",
+        type=float,
+        default=None,
+        help="Maximum raw confidence eligible for an extra tail correction.",
     )
     parser.add_argument(
         "--head-weight",

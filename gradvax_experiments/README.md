@@ -1,43 +1,39 @@
-# TANGS experiments (protocol v4.7)
+# TANGS experiments (protocol v4.8)
 
-## Current v4.7 entry points
+## Current v4.8 entry points
 
-The v4.5/v4.6 material later in this README is retained for artifact
-reproduction. Gradient surgery is STOP. Current TANGS means Tail-ANchor-Gated
-Scores: exact FixMatch training, measurement-only supervised tail anchors, and
-frozen deterministic score correction.
+The v4.5/v4.6/v4.7 material later in this README is retained for reproduction.
+Those versions are STOP. Current v4.8 uses exact FixMatch training,
+measurement-only supervised tail anchors, and a frozen selective score rule.
 
 ```powershell
 Set-Location D:\Auto-claude-code-research-in-sleep\gradvax_experiments
 & C:\lintao\envs\fixmatch\python.exe -m pytest -q
 ```
 
-```bash
-CUDA_VISIBLE_DEVICES=0 bash scripts/run_v47_smoke.sh
-```
-
-Only if the server smoke passes and the retrospective
-`results/second_try_2026-08-15/v47-development-selection.json` is
-`PROVISIONAL`, run the fresh integrated 50k C100 development validation:
+Deploy the PROVISIONAL artifact
+`results/third_try_2026-08-15/v48-retrospective-selection.json`, then run:
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 bash scripts/run_v47_development.sh
+CUDA_VISIBLE_DEVICES=0 bash scripts/run_v48_smoke.sh
+CUDA_VISIBLE_DEVICES=0 bash scripts/run_v48_holdout.sh
 ```
 
-This writes `results/v47-integrated-development-gate.json`. Only if that fresh
-50k gate is `PASS`, launch the required single-GPU confirmatory matrix:
+The holdout is a fresh seed-1 C100 development run with 50,000 steps and a new
+split hash. It writes `results/v48-holdout-development-gate.json`. Only if that
+gate is `PASS`, launch the required single-GPU confirmatory matrix:
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 bash scripts/run_required_v47.sh
+CUDA_VISIBLE_DEVICES=0 bash scripts/run_required_v48.sh
 ```
 
-The current method is `tangs-v47`. Its frozen scoring constants are base prior
-alpha 0.65, extra compatible-tail alpha 0.25, and anchor cosine threshold
-0.75. The old `tangs` and `tangs-v46` identifiers remain bound to their failed
-archived methods. `run_required_v47.sh` trains C100 first and applies its
-stop-loss gate, then trains the required C10-100 and STL10-20 cells serially
-with exactly the same frozen parameters. Every model writes raw, uniform-LA,
-and v4.7 final metrics; do not launch separate FixMatch or LA runs.
+The current method is `tangs-v48`. Frozen constants are uniform LA 0.80, base
+prior 0.70, extra compatible-tail 0.40, anchor cosine 0.775, best-vs-second
+anchor margin 0.05, and raw-confidence ceiling 0.90. The old `tangs`,
+`tangs-v46`, and `tangs-v47` identifiers retain their archived behavior.
+`run_required_v48.sh` trains C100 first and applies its stop-loss gate, then
+trains the required C10-100 and STL10-20 cells serially. Every model writes
+raw, uniform-LA, and v4.8 metrics from one final EMA checkpoint.
 
 This directory is a self-contained server package for the paper-facing **TANGS**
 experiments. The training substrate is derived from CDMAD commit
@@ -46,7 +42,8 @@ experiments. The training substrate is derived from CDMAD commit
 
 ## Scientific lock
 
-- `manualSeed=0`, one run per minimum-plan cell.
+- `manualSeed=0` for confirmatory cells; the preregistered v4.8 development
+  holdout alone uses seed 1 to obtain a new split.
 - Exact CDMAD WRN-28-2, including the unused rotation head and executed
   BatchNorm defaults.
 - Adam at constant `1.5e-3`, no scheduler, FP32 only.

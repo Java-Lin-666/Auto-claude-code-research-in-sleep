@@ -69,6 +69,30 @@ class CalibrationV47Tests(unittest.TestCase):
         expected = logits - 0.65 * (counts / counts.sum()).log().unsqueeze(0)
         torch.testing.assert_close(actual, expected)
 
+    def test_margin_and_confidence_gate_suppress_extra_boost(self):
+        from tangs.calibration import anchor_gated_logits
+
+        logits = torch.tensor([[0.1, 0.0, 0.0], [8.0, 0.0, 0.0]])
+        features = torch.tensor([[1.0, 0.0], [1.0, 0.0]])
+        counts = torch.tensor([100.0, 10.0, 1.0])
+        anchors = torch.tensor([[-1.0, 0.0, 0.0], [-0.99, -0.01, 0.0]])
+        actual = anchor_gated_logits(
+            logits,
+            features,
+            counts,
+            [1, 2],
+            anchors,
+            torch.tensor([True, True]),
+            base_alpha=0.7,
+            extra_tail_alpha=0.4,
+            anchor_threshold=0.775,
+            anchor_margin=0.05,
+            confidence_ceiling=0.9,
+        )
+        prior = counts / counts.sum()
+        expected = logits - 0.7 * prior.log().unsqueeze(0)
+        torch.testing.assert_close(actual, expected)
+
 
 if __name__ == "__main__":
     unittest.main()

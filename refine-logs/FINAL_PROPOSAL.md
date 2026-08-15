@@ -1,12 +1,89 @@
-# TANGS v4.7: Tail-ANchor-Gated Scores for Long-Tailed Semi-Supervised Learning
+# TANGS v4.8: Selective Tail-ANchor-Gated Scores for Long-Tailed Semi-Supervised Learning
 
-*Specification version: 4.7 — score-calibration pivot after the v4.6 STOP gate*
-*Status: v4.6 gradient surgery is rejected. Retrospective rescoring of the old v4.6 observer checkpoint is PROVISIONAL candidate evidence only, not a v4.7 PASS. The complete local suite passes 58/58 and the local five-step CUDA integration smoke is DONE. A fresh target-server v4.7 C100 50k development run is required before any 250k run. After that true gate passes, the required single-GPU matrix is C100, C10, and STL10-20 at 250k steps each.*
+*Specification version: 4.8 — confidence-and-anchor-uniqueness revision after the v4.7 STOP gate*
+*Status: v4.7 completed a genuine server C100 50k run but failed two frozen efficacy guards. v4.8 is PROVISIONAL on two archived 50k training realizations; 61/61 local tests and a five-step local CUDA smoke pass. Only one fresh server seed-1 C100 50k holdout is authorized. No 250k run is authorized unless that unseen-split holdout passes.*
 *Legacy working name: GradVax. In v4.7, TANGS expands to Tail-ANchor-Gated Scores; v4.5/v4.6 keep their archived gradient-surgery identities.*
 
 ---
 
-## Controlling v4.7 Pivot (2026-08-15)
+## Controlling v4.8 Revision (2026-08-15)
+
+This section supersedes conflicting launch and scoring rules below. It does not
+alter the archived v4.5/v4.6/v4.7 outcomes.
+
+### Why v4.7 stopped
+
+The fresh integrated seed-0 C100 development run completed 50,000/50,000 steps
+without an infrastructure error. Raw FixMatch reached 36.12 bACC, frozen
+uniform LA (`alpha=0.85`) reached 39.42, and v4.7 reached 39.80. v4.7 gained
+9.82 Tail points over raw and reduced dead classes from 21 to 4, but its Head
+drop was -2.30 points (limit -2.00) and its bACC gain over LA was +0.38
+(required +0.50). The v4.7 machine gate is therefore STOP. No threshold is
+relaxed and no v4.7 250k run is allowed.
+
+The failure is selective rather than total: v4.7's absolute anchor threshold
+made about two thirds of development examples eligible for an extra tail
+boost. It improved tail recognition but admitted ambiguous anchor matches and
+high-confidence examples, causing avoidable Head flips.
+
+### v4.8 method
+
+Training remains exact FixMatch plus a measurement-only supervised tail-anchor
+observer; no training gradient is ever modified. v4.8 keeps the one-tail-class
+score correction but requires three forms of evidence:
+
+1. best tail-anchor cosine at least `0.775`;
+2. cosine gap between the best and second-best tail anchors at least `0.05`;
+3. raw maximum softmax confidence at most `0.90`.
+
+The frozen base labeled-prior strength is `0.70`, the extra compatible-tail
+strength is `0.40`, and the paired head-constrained uniform-LA control is
+`alpha=0.80`. The confidence and anchor-uniqueness gates reduce eligibility to
+about 12% and actual prediction flips to about 5% on both selection
+realizations, instead of broadly boosting tail logits.
+
+### Retrospective robustness evidence — PROVISIONAL
+
+The compact 8,064-rule development grid was evaluated on two independently
+trained seed-0 50k checkpoints with the same registered development split. A
+candidate had to pass every original efficacy rule on both realizations. There
+were 110 fresh-run passing candidates and 21 candidates that passed both; the
+frozen rule maximizes the minimum safety margin across all hard gates.
+
+| Training realization | Raw bACC | LA-0.80 bACC | v4.8 bACC | v4.8 Head | Medium | Tail | GM | Dead | v4.8 vs LA bACC/Tail |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Fresh integrated 50k | 36.14 | 39.22 | **39.86** | 66.79 | 37.18 | 15.70 | 20.49 | 3 | +0.64 / +3.39 |
+| Archived observer 50k | 36.70 | 39.20 | **39.84** | 67.82 | 37.18 | 14.61 | 20.40 | 4 | +0.64 / +3.52 |
+
+The corresponding Head drops versus raw are -1.82 and -1.58 points. The
+machine artifact is
+`gradvax_experiments/results/third_try_2026-08-15/v48-retrospective-selection.json`
+with `status=PROVISIONAL`; it explicitly forbids 250k. Local re-evaluation of
+the server checkpoint gives raw 36.14 instead of the server summary's 36.12
+because the local and server PyTorch/CUDA stacks differ on one boundary
+prediction. This small numerical drift is disclosed and is another reason the
+retrospective result cannot be called PASS.
+
+### Next evidence gate and full matrix
+
+The next job is one fresh P-C100-100 development run with `manual_seed=1` and
+50,000 steps. Seed 1 changes the C100 training/development selection; the gate
+requires its split hash to differ from both selection artifacts. All v4.8
+parameters and the original efficacy thresholds are frozen before this run.
+Only `scripts/analyze_v48_holdout.py` may issue PASS/STOP.
+
+If the seed-1 holdout passes, the single GPU may run the frozen 250k matrix in
+order: P-C100-100 seed 0, P-C10-100 seed 0, and P-STL10-20 seed 0. C100 is the
+stop-loss gate, not the only dataset. A C100 STOP blocks C10/STL; a C100 PASS
+makes both cross-dataset rows required. P-STL10-10 remains optional.
+
+---
+
+## Historical v4.7 Pivot (2026-08-15)
+
+**Historical status:** the genuine integrated v4.7 50k run later returned
+STOP as recorded in `THIRD_TRY_2026-08-15.md`. This section is retained for
+method and failure provenance only.
 
 This section supersedes every conflicting method, claim, and launch rule below.
 The v4.5 and v4.6 sections remain immutable failure-analysis records.

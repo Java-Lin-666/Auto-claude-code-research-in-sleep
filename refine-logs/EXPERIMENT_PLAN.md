@@ -1,12 +1,67 @@
 # TANGS Experiment Plan
 
-*Specification version: 4.7 — tail-anchor-gated score correction plan*
-*Aligned with FINAL_PROPOSAL.md v4.7 and EXPERIMENT_TRACKER.md v4.7*
-*Status: v4.6 is STOP. Old-checkpoint v4.7 rescoring remains PROVISIONAL. The fresh target-server C100 50k integrated development run completed normally and returned machine-gate STOP; no 250k job is authorized. The verified preservation record is `THIRD_TRY_2026-08-15.md`.*
+*Specification version: 4.8 — selective confidence-and-anchor-uniqueness scoring plan*
+*Aligned with FINAL_PROPOSAL.md v4.8 and EXPERIMENT_TRACKER.md v4.8*
+*Status: v4.7 is STOP after a genuine server 50k run. v4.8 is PROVISIONAL across two archived 50k realizations; 61/61 local tests and local CUDA smoke pass. Only a fresh seed-1 C100 50k holdout is eligible after server smoke. Every 250k job remains BLOCKED.*
 
 ---
 
-## 0A. v4.7 Execution Plan (Controlling)
+## 0B. v4.8 Execution Plan (Controlling)
+
+### 0B.1 Frozen method
+
+- Training is exact FixMatch; supervised tail anchors are observer-only and
+  training-gradient modifications must remain zero.
+- Uniform-LA control: `alpha=0.80`.
+- Base prior correction: `alpha=0.70`.
+- Extra compatible-tail correction: `0.40` for at most one tail class.
+- Eligibility requires best anchor cosine >= 0.775, best-minus-second anchor
+  cosine >= 0.05, and raw maximum softmax confidence <= 0.90.
+- All constants transfer unchanged to C10 and STL-10.
+
+### 0B.2 Retrospective selection versus unseen holdout
+
+A bounded 8,064-rule grid was evaluated on the fresh v4.7 seed-0 checkpoint
+and the archived independent seed-0 observer checkpoint. A candidate had to
+pass every original efficacy rule on both. There were 110 candidates passing
+the fresh run and 21 passing both. The frozen rule produced 39.86/39.84 bACC,
+66.79/67.82 Head, and 15.70/14.61 Tail, compared with head-compliant LA-0.80
+bACC 39.22/39.20. Its status remains `PROVISIONAL` and it cannot authorize
+250k.
+
+One fresh `manual_seed=1` C100 development run is the holdout. Seed 1 changes
+the train/development selection; the gate verifies a split hash unseen during
+selection. Do not alter the rule, comparator, or thresholds after this point.
+
+### 0B.3 Single-GPU queue
+
+| Order | Run ID | Protocol/mode | Steps | Status | Condition |
+|---:|---|---|---:|---|---|
+| 0 | `v48-server-smoke-c100-seed1` | C100 smoke, seed 1 | 5 | READY | target tests first |
+| 1 | `v48-holdout-c100-100-seed1` | P-C100-100 development, seed 1 | 50,000 | BLOCKED-UNTIL-SMOKE | only current paid authorization |
+| 2 | `v48-confirm-c100-100-seed0` | P-C100-100 confirmatory | 250,000 | BLOCKED-UNTIL-HOLDOUT-PASS | core stop-loss gate |
+| 3 | `v48-confirm-c10-100-seed0` | P-C10-100 confirmatory | 250,000 | BLOCKED-UNTIL-C100-PASS | required transfer |
+| 4 | `v48-confirm-stl10-20-seed0` | P-STL10-20 confirmatory | 250,000 | BLOCKED-UNTIL-C100-PASS | required transfer |
+
+Presently authorized server commands:
+
+```bash
+CUDA_VISIBLE_DEVICES=0 bash scripts/run_v48_smoke.sh
+CUDA_VISIBLE_DEVICES=0 bash scripts/run_v48_holdout.sh
+```
+
+The holdout retains every original efficacy rule and additionally verifies
+seed 1, an unseen split hash, 50k completion and diagnostic coverage, frozen
+parameters, and zero gradient writes. STOP forbids all 250k work. Only a PASS
+allows `scripts/run_required_v48.sh`, which runs C100 first and then the
+required C10/STL10-20 transfer rows.
+
+---
+
+## 0A. v4.7 Execution Plan (Historical)
+
+**Historical:** the integrated v4.7 50k gate returned STOP and this section no
+longer authorizes execution.
 
 This section supersedes conflicting v4.5/v4.6 execution rules below. The
 retrospective rescoring of an unchanged completed v4.6 FixMatch observer

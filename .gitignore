@@ -58,4 +58,10 @@ gradvax_experiments/results/second_try_2026-08-15/*
 !gradvax_experiments/results/v47-integrated-development-gate.json
 !gradvax_experiments/results/v47-confirmatory-c100-gate.json
 !gradvax_experiments/results/v47-required-matrix.json
+!gradvax_experiments/results/third_try_2026-08-15/
+gradvax_experiments/results/third_try_2026-08-15/*
+!gradvax_experiments/results/third_try_2026-08-15/v48-retrospective-selection.json
+!gradvax_experiments/results/v48-holdout-development-gate.json
+!gradvax_experiments/results/v48-confirmatory-c100-gate.json
+!gradvax_experiments/results/v48-required-matrix.json
 tmp/

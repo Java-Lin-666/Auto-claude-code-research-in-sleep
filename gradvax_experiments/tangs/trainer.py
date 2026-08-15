@@ -309,7 +309,7 @@ class Trainer:
             alpha=config.ema_decay,
         )
         self.classifier_parameters = list(self.model.output.parameters())
-        self.use_score_correction = config.method == "tangs-v47"
+        self.use_score_correction = config.method in {"tangs-v47", "tangs-v48"}
         self.labeled_counts = torch.tensor(
             data.split_manifest["labeled_counts"],
             dtype=torch.float32,
@@ -358,7 +358,7 @@ class Trainer:
         if not self.use_score_correction:
             return logits
         if not isinstance(self.controller, TailRowController):
-            raise TypeError("TANGS v4.7 requires the classwise tail-anchor controller.")
+            raise TypeError("Score-calibration TANGS requires the tail-anchor controller.")
         return anchor_gated_logits(
             logits,
             features,
@@ -369,6 +369,8 @@ class Trainer:
             base_alpha=self.config.score_base_alpha,
             extra_tail_alpha=self.config.score_extra_tail_alpha,
             anchor_threshold=self.config.score_anchor_threshold,
+            anchor_margin=self.config.score_anchor_margin,
+            confidence_ceiling=self.config.score_confidence_ceiling,
             eps=self.config.geometry_eps,
         )
 
