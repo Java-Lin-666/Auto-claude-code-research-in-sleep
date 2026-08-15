@@ -2,7 +2,7 @@
 
 *Specification version: 4.7 — tail-anchor-gated score correction ledger*
 *Last updated: 2026-08-15*
-*Status: v4.5 and v4.6 gradient-surgery methods are archived STOP results. The old-checkpoint v4.7 screen is PROVISIONAL, not PASS; 58/58 local tests and the five-step local CUDA smoke are DONE. A fresh server C100 50k integrated development run is next. All 250k work is BLOCKED until that true gate passes. The required eventual matrix covers C100, C10, and STL10-20.*
+*Status: v4.5 and v4.6 gradient-surgery methods are archived STOP results. The old-checkpoint v4.7 screen remains PROVISIONAL. The fresh server C100 50k integrated v4.7 run completed normally but its machine gate is STOP; all 250k work is BLOCKED. The complete verified local snapshot is recorded as third try.*
 *Aligned files: FINAL_PROPOSAL.md v4.7, EXPERIMENT_PLAN.md v4.7, reported_results_from_papers.md v4.7 policy*
 *Legacy working name: GradVax. TANGS v4.7 means Tail-ANchor-Gated Scores.*
 
@@ -63,16 +63,16 @@ Artifacts:
 | V47-CODE | frozen scorer, config, trainer integration, raw/adjusted reporting | DONE | `calibration.py`, `metrics.py`, `trainer.py`, config version 4.7 |
 | V47-LOCAL-TEST | complete suite | DONE | 58/58 PASS in 4.56 s; RTX 4060 environment |
 | V47-LOCAL-SMOKE | five-step CUDA integration | DONE | config `d0bfeac1...111e75`; zero modifications; raw/LA/adjusted summaries finite |
-| V47-SERVER-TEST | repeat suite on target | TODO | must pass before paid run |
-| V47-SERVER-SMOKE | five-step CUDA + resume on deployed v4.7 | TODO | must pass before fresh 50k development |
-| V47-INTEGRATED-50K | fresh C100 v4.7 development run and machine gate | TODO | `run_v47_development.sh`; only this run may issue development PASS/STOP |
+| V47-SERVER-TEST | repeat suite on target | DONE | 58/58 PASS in 4.51 s on target RTX 4090 |
+| V47-SERVER-SMOKE | five-step CUDA smoke on deployed v4.7 | DONE | `v47-server-smoke-c100-seed0`, config `5d242224...f9f3e9`; finite and observer-only |
+| V47-INTEGRATED-50K | fresh C100 v4.7 development run and machine gate | STOP | config `c057da1f...6824b11a`; normal 50k completion, all integrity checks PASS, two efficacy checks fail |
 | V47-INDEPENDENT-AUDIT | different model family reads code and raw artifacts | TODO | required before paper claim |
 
 ### 0A.4 Single-GPU run ledger
 
 | Order | Run ID | Protocol | Steps | Status | Authorization |
 |---:|---|---|---:|---|---|
-| 1 | `v47-dev-c100-100-integrated-seed0` | P-C100-100 development | 50,000 | READY-AFTER-SERVER-SMOKE | only PROVISIONAL screen + valid server smoke authorize this row |
+| 1 | `v47-dev-c100-100-integrated-seed0` | P-C100-100 development | 50,000 | STOP | complete third-try artifact; bACC-vs-LA and head-vs-raw guards fail |
 | 2 | `v47-confirm-c100-100-seed0` | P-C100-100 | 250,000 | BLOCKED | only after fresh integrated 50k PASS |
 | 3 | `v47-confirm-c10-100-seed0` | P-C10-100 | 250,000 | BLOCKED | required after C100 confirmatory PASS |
 | 4 | `v47-confirm-stl10-20-seed0` | P-STL10-20 | 250,000 | BLOCKED | required after C100 confirmatory PASS |
@@ -85,6 +85,34 @@ official test result and adds 250k/hash/config checks. Parameters are
 immutable. A failed 50k gate stops rows 2-4; a failed C100 confirmatory gate
 stops rows 3-4. C100 is only the stop-loss-first dataset. The required paper
 matrix still includes C10 and STL10-20; P-STL10-10 is optional afterward.
+
+### 0A.5 Third try — fresh server 50k result (2026-08-15)
+
+The only fresh integrated v4.7 development run completed on the target server
+without runtime failure. It used the 5,000-example balanced, disjoint
+development split; the official test set was not read. The machine gate is
+authoritative and is **STOP**.
+
+| Scoring row | bACC | Head / Medium / Tail | GM | Dead |
+|---|---:|---:|---:|---:|
+| Raw FixMatch | 36.12 | 68.61 / 33.24 / 6.61 | 5.72 | 21 |
+| Uniform LA (`alpha=0.85`) | 39.42 | 66.55 / 38.94 / 12.79 | 16.00 | 7 |
+| TANGS v4.7 | 39.80 | 66.30 / 36.76 / 16.42 | 20.34 | 4 |
+
+TANGS v4.7 passes raw bACC (+3.68 pp), raw tail (+9.82 pp), GM, and
+dead-class guards, and it passes tail versus uniform LA (+3.64 pp). It fails
+the bACC-versus-LA guard (+0.38 pp, required >= +0.50 pp) and the
+head-versus-raw guard (-2.30 pp, permitted >= -2.00 pp). All integrity fields
+in `v47-integrated-development-gate.json` are true, including frozen
+constants, zero gradient modifications, 50,000-step diagnostics, and split
+disjointness. Therefore `allow_single_c100_confirmatory_run=false` and
+`allow_confirmatory_matrix=false`; no 250k run is authorized.
+
+Primary raw artifact: `gradvax_experiments/results/third_try_2026-08-15/v47-dev-c100-100-integrated-seed0/`.
+Gate: `gradvax_experiments/results/third_try_2026-08-15/v47-integrated-development-gate.json`.
+Preservation record: `refine-logs/THIRD_TRY_2026-08-15.md`.
+An independent reviewer of a different model family remains required before
+any paper-facing conclusion.
 
 ---
 

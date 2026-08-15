@@ -2,7 +2,7 @@
 
 *Specification version: 4.7 — tail-anchor-gated score correction plan*
 *Aligned with FINAL_PROPOSAL.md v4.7 and EXPERIMENT_TRACKER.md v4.7*
-*Status: v4.6 is STOP. Old-checkpoint v4.7 rescoring is PROVISIONAL only; 58/58 local tests pass and the local CUDA integration smoke is DONE. The next paid job is a fresh target-server C100 50k integrated development run. No 250k job is authorized until it passes. The required full matrix is C100, C10, and STL10-20, run serially on the single GPU.*
+*Status: v4.6 is STOP. Old-checkpoint v4.7 rescoring remains PROVISIONAL. The fresh target-server C100 50k integrated development run completed normally and returned machine-gate STOP; no 250k job is authorized. The verified preservation record is `THIRD_TRY_2026-08-15.md`.*
 
 ---
 
@@ -70,7 +70,7 @@ gate passes:
 
 | Order | Run ID | Protocol | Method | Steps | Status |
 |---:|---|---|---|---:|---|
-| 1 | `v47-dev-c100-100-integrated-seed0` | P-C100-100 development | `tangs-v47` integrated validation | 50,000 | READY-AFTER-SERVER-SMOKE |
+| 1 | `v47-dev-c100-100-integrated-seed0` | P-C100-100 development | `tangs-v47` integrated validation | 50,000 | STOP — bACC-vs-LA +0.38 pp (< +0.50); Head-vs-raw -2.30 pp (< -2.00) |
 | 2 | `v47-confirm-c100-100-seed0` | P-C100-100 | frozen `tangs-v47` | 250,000 | BLOCKED-UNTIL-50K-PASS |
 | 3 | `v47-confirm-c10-100-seed0` | P-C10-100 | frozen C100-selected `tangs-v47` | 250,000 | BLOCKED-UNTIL-C100-250K-PASS |
 | 4 | `v47-confirm-stl10-20-seed0` | P-STL10-20 | frozen C100-selected `tangs-v47` | 250,000 | BLOCKED-UNTIL-C100-250K-PASS |
@@ -98,6 +98,15 @@ mechanism study or ends it. A PASS authorizes, sequentially, C10-100 and
 STL10-20 transfer with the C100-frozen constants, then direct post-hoc controls
 including tau-normalization/cRT-style calibration. Strong LTSSL methods remain
 citation-marked context unless separately and exactly reproduced.
+
+Recorded fresh result: the completed 50k run has config hash
+`c057da1f238e3410099ce21671a285101dbb5ba802372f9f92071abe6824b11a` and
+machine gate `results/v47-integrated-development-gate.json` with `status:
+STOP`. The raw local snapshot is
+`gradvax_experiments/results/third_try_2026-08-15/`; see
+`refine-logs/THIRD_TRY_2026-08-15.md` for checksums, paths, and the full
+raw/LA/TANGS comparison. This result changes no frozen parameter and does not
+authorize a replacement 50k or any 250k run.
 
 ---
 
