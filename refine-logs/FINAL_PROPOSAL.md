@@ -1,7 +1,7 @@
 # TANGS v4.8: Selective Tail-ANchor-Gated Scores for Long-Tailed Semi-Supervised Learning
 
 *Specification version: 4.8 — confidence-and-anchor-uniqueness revision after the v4.7 STOP gate*
-*Status: v4.7 completed a genuine server C100 50k run but failed two frozen efficacy guards. v4.8 is PROVISIONAL on two archived 50k training realizations; 61/61 local tests and a five-step local CUDA smoke pass. Only one fresh server seed-1 C100 50k holdout is authorized. No 250k run is authorized unless that unseen-split holdout passes.*
+*Status: v4.7 completed a genuine server C100 50k run but failed two frozen efficacy guards. v4.8's fresh seed-1 server holdout completed 50,000 steps with all integrity checks passing, but failed two frozen efficacy guards. No v4.8 250k run is authorized.*
 *Legacy working name: GradVax. In v4.7, TANGS expands to Tail-ANchor-Gated Scores; v4.5/v4.6 keep their archived gradient-surgery identities.*
 
 ---
@@ -64,18 +64,22 @@ because the local and server PyTorch/CUDA stacks differ on one boundary
 prediction. This small numerical drift is disclosed and is another reason the
 retrospective result cannot be called PASS.
 
-### Next evidence gate and full matrix
+### Fresh holdout outcome and matrix state
 
-The next job is one fresh P-C100-100 development run with `manual_seed=1` and
-50,000 steps. Seed 1 changes the C100 training/development selection; the gate
-requires its split hash to differ from both selection artifacts. All v4.8
-parameters and the original efficacy thresholds are frozen before this run.
-Only `scripts/analyze_v48_holdout.py` may issue PASS/STOP.
+The fresh P-C100-100 development run with `manual_seed=1` completed all
+50,000 steps on a split distinct from both selection artifacts. The frozen
+v4.8 scorer reached 38.74 bACC, 66.97 Head, 12.00 Tail, 18.26 GM, and five
+dead classes, compared with raw 36.32/69.52/5.15/8.47/14 and uniform LA-0.80
+38.64/67.82/9.15/15.35/7. All split, diagnostics, frozen-parameter, and
+zero-gradient-modification checks passed. However, the bACC gain over LA is
++0.10 pp (required +0.50 pp), and the Head change versus raw is -2.55 pp
+(limit -2.00 pp). `scripts/analyze_v48_holdout.py` therefore issued STOP with
+`allow_confirmatory_matrix=false`.
 
-If the seed-1 holdout passes, the single GPU may run the frozen 250k matrix in
-order: P-C100-100 seed 0, P-C10-100 seed 0, and P-STL10-20 seed 0. C100 is the
-stop-loss gate, not the only dataset. A C100 STOP blocks C10/STL; a C100 PASS
-makes both cross-dataset rows required. P-STL10-10 remains optional.
+The serial C100 → C10 → STL10-20 250k matrix is consequently blocked. The
+raw artifact and machine gate are preserved in
+`gradvax_experiments/results/fourth_try_2026-08-15/`; the complete preservation
+record is `refine-logs/FOURTH_TRY_2026-08-15.md`.
 
 ---
 

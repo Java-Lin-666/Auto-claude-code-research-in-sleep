@@ -2,7 +2,7 @@
 
 *Specification version: 4.8 — selective confidence-and-anchor-uniqueness scoring plan*
 *Aligned with FINAL_PROPOSAL.md v4.8 and EXPERIMENT_TRACKER.md v4.8*
-*Status: v4.7 is STOP after a genuine server 50k run. v4.8 is PROVISIONAL across two archived 50k realizations; 61/61 local tests and local CUDA smoke pass. Only a fresh seed-1 C100 50k holdout is eligible after server smoke. Every 250k job remains BLOCKED.*
+*Status: v4.7 is STOP after a genuine server 50k run. v4.8 completed its one fresh seed-1 C100 50k holdout with all integrity checks passing, but the machine gate is STOP on two frozen efficacy guards. Every v4.8 250k job remains BLOCKED.*
 
 ---
 
@@ -37,24 +37,20 @@ selection. Do not alter the rule, comparator, or thresholds after this point.
 
 | Order | Run ID | Protocol/mode | Steps | Status | Condition |
 |---:|---|---|---:|---|---|
-| 0 | `v48-server-smoke-c100-seed1` | C100 smoke, seed 1 | 5 | READY | target tests first |
-| 1 | `v48-holdout-c100-100-seed1` | P-C100-100 development, seed 1 | 50,000 | BLOCKED-UNTIL-SMOKE | only current paid authorization |
-| 2 | `v48-confirm-c100-100-seed0` | P-C100-100 confirmatory | 250,000 | BLOCKED-UNTIL-HOLDOUT-PASS | core stop-loss gate |
-| 3 | `v48-confirm-c10-100-seed0` | P-C10-100 confirmatory | 250,000 | BLOCKED-UNTIL-C100-PASS | required transfer |
-| 4 | `v48-confirm-stl10-20-seed0` | P-STL10-20 confirmatory | 250,000 | BLOCKED-UNTIL-C100-PASS | required transfer |
+| 0 | `v48-server-smoke-c100-seed1` | C100 smoke, seed 1 | 5 | DONE | target suite 61/61; finite observer-only CUDA smoke |
+| 1 | `v48-holdout-c100-100-seed1` | P-C100-100 development, seed 1 | 50,000 | STOP | completed 50,000/50,000; two frozen efficacy guards failed |
+| 2 | `v48-confirm-c100-100-seed0` | P-C100-100 confirmatory | 250,000 | BLOCKED | holdout machine gate is STOP |
+| 3 | `v48-confirm-c10-100-seed0` | P-C10-100 confirmatory | 250,000 | BLOCKED | C100 holdout STOP blocks transfer |
+| 4 | `v48-confirm-stl10-20-seed0` | P-STL10-20 confirmatory | 250,000 | BLOCKED | C100 holdout STOP blocks transfer |
 
-Presently authorized server commands:
-
-```bash
-CUDA_VISIBLE_DEVICES=0 bash scripts/run_v48_smoke.sh
-CUDA_VISIBLE_DEVICES=0 bash scripts/run_v48_holdout.sh
-```
-
-The holdout retains every original efficacy rule and additionally verifies
-seed 1, an unseen split hash, 50k completion and diagnostic coverage, frozen
-parameters, and zero gradient writes. STOP forbids all 250k work. Only a PASS
-allows `scripts/run_required_v48.sh`, which runs C100 first and then the
-required C10/STL10-20 transfer rows.
+The completed holdout retained every original efficacy rule and verified seed
+1, an unseen split hash, 50k completion and diagnostic coverage, frozen
+parameters, and zero gradient writes. Its bACC gain versus uniform LA was
+only +0.10 pp (required +0.50 pp), and its Head change versus raw was -2.55
+pp (limit -2.00 pp). STOP therefore forbids all 250k work; no v4.8 server
+command is currently authorized. See `refine-logs/FOURTH_TRY_2026-08-15.md`
+and the machine artifact at
+`gradvax_experiments/results/fourth_try_2026-08-15/v48-holdout-development-gate.json`.
 
 ---
 

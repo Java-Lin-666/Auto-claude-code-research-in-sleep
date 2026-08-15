@@ -2,7 +2,7 @@
 
 *Specification version: 4.8 — selective score-correction ledger*
 *Last updated: 2026-08-15*
-*Status: v4.5/v4.6/v4.7 are archived STOP results. v4.8 is PROVISIONAL after passing all original gates on two archived 50k realizations. Local tests are 61/61 and local CUDA smoke is DONE. Only the fresh seed-1 C100 50k holdout is pending; all 250k work is BLOCKED.*
+*Status: v4.5/v4.6/v4.7 are archived STOP results. v4.8's one fresh seed-1 C100 50k holdout completed normally, with all integrity checks passing, but its frozen machine gate is STOP. All 250k work is BLOCKED.*
 *Aligned files: FINAL_PROPOSAL.md v4.8, EXPERIMENT_PLAN.md v4.8, reported_results_from_papers.md v4.8 policy*
 *Legacy working name: GradVax. TANGS v4.8 means selective Tail-ANchor-Gated Scores.*
 
@@ -38,24 +38,45 @@ Artifacts:
 - implementation: `tangs/calibration.py`, method `tangs-v48`;
 - local smoke: `results/v48-local-smoke-c100-seed1`, config `a5e4e6bffb726936cb095950fd961b0d08a83dee766197399c273c993fea4405`.
 
-### 0B.3 Integrity and single-GPU queue
+### 0B.3 Fresh seed-1 holdout result
+
+| Comparator / scorer | bACC | Head | Medium | Tail | GM | Dead |
+|---|---:|---:|---:|---:|---:|---:|
+| Raw FixMatch | 36.32 | 69.52 | 34.35 | 5.15 | 8.47 | 14 |
+| Uniform LA-0.80 | 38.64 | 67.82 | 38.94 | 9.15 | 15.35 | 7 |
+| TANGS v4.8 | **38.74** | 66.97 | 37.29 | **12.00** | **18.26** | **5** |
+
+The fresh seed-1 run completed 50,000/50,000 development steps on a split
+unseen during retrospective selection. Its TANGS deltas are +2.42 bACC, +6.85
+Tail, +9.79 GM, and -9 dead classes versus raw; versus LA they are +0.10
+bACC, +2.85 Tail, +2.91 GM, and -2 dead classes. The two failed frozen guards
+are bACC versus LA (+0.10 pp, required +0.50 pp) and Head versus raw (-2.55
+pp, limit -2.00 pp). The machine gate is consequently `STOP` and
+`allow_confirmatory_matrix=false`.
+
+Artifacts: `results/fourth_try_2026-08-15/v48-holdout-c100-100-seed1/`,
+`results/fourth_try_2026-08-15/v48-holdout-development-gate.json`, and
+`refine-logs/FOURTH_TRY_2026-08-15.md`.
+
+### 0B.4 Integrity and single-GPU queue
 
 | ID | Item | Status | Evidence / condition |
 |---|---|---|---|
 | V48-CODE | isolated method/config/scorer/gates | DONE | v4.5-v4.7 identifiers retained |
 | V48-LOCAL-TEST | full suite | DONE | 61/61 |
 | V48-LOCAL-SMOKE | five-step CUDA, seed 1 | DONE | zero gradient modifications; all summaries finite |
-| V48-SERVER-SMOKE | target tests and five-step CUDA | TODO | must precede paid holdout |
-| V48-HOLDOUT | `v48-holdout-c100-100-seed1`, 50k | BLOCKED-UNTIL-SMOKE | only paid run currently authorized |
-| V48-C100-250K | seed-0 confirmatory | BLOCKED | only after holdout PASS |
-| V48-C10-250K | seed-0 transfer | BLOCKED | required after C100 PASS |
-| V48-STL20-250K | seed-0 transfer | BLOCKED | required after C100 PASS |
+| V48-SERVER-SMOKE | target tests and five-step CUDA | DONE | 61/61 in 4.86 s; config `fbf0c3dab4cb5ac02e7a9b39dc7a02a67fb6fab39f51cac612d6fd707a56ade6` |
+| V48-HOLDOUT | `v48-holdout-c100-100-seed1`, 50k | STOP | config `4b75e3813c7c6328f96c08652738ace92fd70f34bd8247520c02e7e789030f87`; 50,000 complete |
+| V48-C100-250K | seed-0 confirmatory | BLOCKED | holdout machine gate is STOP |
+| V48-C10-250K | seed-0 transfer | BLOCKED | C100 holdout STOP blocks transfer |
+| V48-STL20-250K | seed-0 transfer | BLOCKED | C100 holdout STOP blocks transfer |
 | V48-INDEPENDENT-AUDIT | different model family | TODO | required before paper claim |
 
-The holdout analyzer rejects seed 0, reused split hashes, incomplete
-diagnostics, any gradient modification, parameter drift, and any original
-efficacy failure. A holdout STOP closes v4.8; a PASS only unlocks the serial
-C100 → C10 → STL10-20 confirmatory script.
+The holdout analyzer accepted seed 1, an unseen split hash, complete
+diagnostics, zero gradient modification, and frozen parameters. It rejected
+the result only on the two recorded efficacy guards. A holdout STOP closes
+v4.8; a PASS would have been the sole route to the serial C100 → C10 →
+STL10-20 confirmatory script.
 
 ---
 
