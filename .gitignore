@@ -52,4 +52,10 @@ patent/
 gradvax_experiments/data/cache/
 gradvax_experiments/results/*
 !gradvax_experiments/results/minimal-gate-c10-100-20000step.json
+!gradvax_experiments/results/second_try_2026-08-15/
+gradvax_experiments/results/second_try_2026-08-15/*
+!gradvax_experiments/results/second_try_2026-08-15/v47-development-selection.json
+!gradvax_experiments/results/v47-integrated-development-gate.json
+!gradvax_experiments/results/v47-confirmatory-c100-gate.json
+!gradvax_experiments/results/v47-required-matrix.json
 tmp/

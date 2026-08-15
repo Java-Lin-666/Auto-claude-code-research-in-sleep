@@ -37,6 +37,10 @@ def load_config(run_dir: Path, data_root: str, device: str) -> RunConfig:
     # configuration hash. These fields did not exist before v4.6.
     values.setdefault("tangs_correction_rho", 1.0)
     values.setdefault("tailrow_observer", False)
+    values.setdefault("score_uniform_la_alpha", 0.85)
+    values.setdefault("score_base_alpha", 0.65)
+    values.setdefault("score_extra_tail_alpha", 0.25)
+    values.setdefault("score_anchor_threshold", 0.75)
     values["protocol"] = Protocol(**values["protocol"])
     values["data_root"] = data_root
     values["output_root"] = str(run_dir.parent)

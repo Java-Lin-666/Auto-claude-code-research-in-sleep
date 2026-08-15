@@ -67,3 +67,38 @@ infrastructure failure. Do not start 250k, resume v4.5 STL, loosen the gate,
 or relabel this development result as a paper claim. A different model family
 must independently audit the raw local archive and code before any separately
 versioned method-revision decision.
+
+## Post-STOP diagnosis and v4.7 reuse (2026-08-15)
+
+No v4.6 result above was changed. Additional read-only analysis of the saved
+observer artifact established:
+
+- observer conflict was 1,589,275 / 1,589,275 eligible tail rows (100%), with
+  mean cosine -0.827;
+- full v4.6 changed the classifier gradient on 47,414 / 50,000 steps;
+- raw tail pseudo-label precision/recall/coverage were 98.08/32.59/47.92%.
+
+The first two facts show that the conflict predicate detects ordinary
+cross-entropy target/non-target competition rather than a selective harmful
+event. The third rules out widespread tail pseudo-label corruption as the
+primary bottleneck. This closes v4.6 permanently; no beta/tau/rho repair is
+authorized.
+
+The unchanged FixMatch observer checkpoint was then reused for a v4.7
+development-only score-calibration study. The official test set was not read.
+
+| Scoring | bACC | Head | Medium | Tail | GM | Dead |
+|---|---:|---:|---:|---:|---:|---:|
+| raw | 36.70 | 69.39 | 34.12 | 6.67 | 5.65 | 22 |
+| uniform LA, alpha=0.85 | 39.42 | 67.58 | 39.18 | 11.52 | 16.11 | 7 |
+| TANGS v4.7, 0.65/0.25/0.75 | **40.04** | 67.45 | 36.94 | **15.82** | **20.84** | **4** |
+
+The retrospective artifact
+`gradvax_experiments/results/second_try_2026-08-15/v47-development-selection.json`
+is **PROVISIONAL**, not PASS. It authorizes only one fresh target-server
+P-C100-100 integrated v4.7 development run of 50,000 steps after the v4.7 CUDA
+smoke; it explicitly forbids every 250k launch. Only the new integrated 50k
+artifact may issue a real development PASS/STOP. If it passes, the single-GPU
+confirmatory schedule is C100 250k first as a stop-loss gate, followed by the
+required C10-100 and STL10-20 250k runs after C100 PASS. This candidate signal
+does not reverse or soften the v4.6 STOP.

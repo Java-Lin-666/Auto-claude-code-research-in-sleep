@@ -1,10 +1,11 @@
-# TANGS experiments (protocol v4.6)
+# TANGS experiments (protocol v4.7)
 
-## Current v4.6 entry points
+## Current v4.7 entry points
 
-The v4.5 material later in this README is retained for artifact reproduction.
-For current work, first run the full test suite and a short CUDA smoke, then use
-the single-GPU development queue:
+The v4.5/v4.6 material later in this README is retained for artifact
+reproduction. Gradient surgery is STOP. Current TANGS means Tail-ANchor-Gated
+Scores: exact FixMatch training, measurement-only supervised tail anchors, and
+frozen deterministic score correction.
 
 ```powershell
 Set-Location D:\Auto-claude-code-research-in-sleep\gradvax_experiments
@@ -12,20 +13,31 @@ Set-Location D:\Auto-claude-code-research-in-sleep\gradvax_experiments
 ```
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 bash scripts/run_v46_development.sh
+CUDA_VISIBLE_DEVICES=0 bash scripts/run_v47_smoke.sh
 ```
 
-Only if `results/v46-development-selection.json` is PASS:
+Only if the server smoke passes and the retrospective
+`results/second_try_2026-08-15/v47-development-selection.json` is
+`PROVISIONAL`, run the fresh integrated 50k C100 development validation:
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 bash scripts/run_required_v46.sh
+CUDA_VISIBLE_DEVICES=0 bash scripts/run_v47_development.sh
 ```
 
-The current method is `tangs-v46`; its registered ablations are
-`tailrow-group` and `tailrow-classwise`, and `tailrow-observer` never modifies
-the gradient. The old `tangs` identifier remains bound to v4.5. The archived
-`scripts/run_required.sh` is blocked by default and must not be used to resume
-the interrupted v4.5 STL cell as current evidence.
+This writes `results/v47-integrated-development-gate.json`. Only if that fresh
+50k gate is `PASS`, launch the required single-GPU confirmatory matrix:
+
+```bash
+CUDA_VISIBLE_DEVICES=0 bash scripts/run_required_v47.sh
+```
+
+The current method is `tangs-v47`. Its frozen scoring constants are base prior
+alpha 0.65, extra compatible-tail alpha 0.25, and anchor cosine threshold
+0.75. The old `tangs` and `tangs-v46` identifiers remain bound to their failed
+archived methods. `run_required_v47.sh` trains C100 first and applies its
+stop-loss gate, then trains the required C10-100 and STL10-20 cells serially
+with exactly the same frozen parameters. Every model writes raw, uniform-LA,
+and v4.7 final metrics; do not launch separate FixMatch or LA runs.
 
 This directory is a self-contained server package for the paper-facing **TANGS**
 experiments. The training substrate is derived from CDMAD commit
@@ -45,9 +57,11 @@ experiments. The training substrate is derived from CDMAD commit
 - CDMAD white-image logit subtraction is disabled in TANGS and its local controls.
 - Confirmatory evidence uses the final EMA checkpoint only.
 
-The research method is not changed: TANGS replaces only the exact accepted
-predicted-head contribution to `model.output` weight and bias. The backbone and
-the rest of the base classifier gradient remain untouched.
+TANGS v4.7 does not replace any training gradient. The observer computes exact
+supervised tail self-row contributions only to maintain class anchors. Final
+scores combine labeled-prior adjustment with an additional correction for at
+most one anchor-compatible tail class. Raw FixMatch and uniform-LA controls
+reuse the same final EMA checkpoint.
 
 ## Environment
 

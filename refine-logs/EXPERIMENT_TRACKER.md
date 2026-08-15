@@ -1,14 +1,94 @@
 # TANGS Experiment Tracker
 
-*Specification version: 4.6 — classwise tail-row recovery ledger*
+*Specification version: 4.7 — tail-anchor-gated score correction ledger*
 *Last updated: 2026-08-15*
-*Status: v4.5 first matrix archived; v4.6 implementation, complete local PyTorch suite (53/53 PASS), target-environment CUDA smoke, and the five sequential C100 development cells are DONE. The machine-readable V46 development gate is STOP; all 250k v4.6 cells remain BLOCKED.*
-*Aligned files: FINAL_PROPOSAL.md v4.6, EXPERIMENT_PLAN.md v4.6, reported_results_from_papers.md v4.6 recovery policy*
-*Legacy working name: GradVax; all new run IDs and paper text use TANGS.*
+*Status: v4.5 and v4.6 gradient-surgery methods are archived STOP results. The old-checkpoint v4.7 screen is PROVISIONAL, not PASS; 58/58 local tests and the five-step local CUDA smoke are DONE. A fresh server C100 50k integrated development run is next. All 250k work is BLOCKED until that true gate passes. The required eventual matrix covers C100, C10, and STL10-20.*
+*Aligned files: FINAL_PROPOSAL.md v4.7, EXPERIMENT_PLAN.md v4.7, reported_results_from_papers.md v4.7 policy*
+*Legacy working name: GradVax. TANGS v4.7 means Tail-ANchor-Gated Scores.*
 
 ---
 
-## 0. v4.6 Recovery Dashboard (Controlling)
+## 0A. v4.7 Dashboard (Controlling)
+
+Every v4.5/v4.6 status below remains historical. This dashboard alone
+authorizes new execution.
+
+### 0A.1 Root-cause disposition
+
+| Finding | Observation | Decision |
+|---|---:|---|
+| v4.6 full efficacy | 35.88 bACC vs 36.70 paired FixMatch; Tail 6.48 vs 6.67 | STOP gradient surgery |
+| observer tail-row conflict | 1,589,275 / 1,589,275 eligible rows; mean cosine -0.827 | conflict trigger is structurally degenerate |
+| v4.6 intervention burden | 47,414 / 50,000 steps modified | not an under-activation problem |
+| raw tail pseudo labels | 98.08 precision / 32.59 recall / 47.92 coverage | exploit reliable tail evidence; do not suppress normal head negatives |
+| dominant recoverable error | prior correction raises bACC by several points without retraining | pivot to score calibration |
+
+### 0A.2 Retrospective candidate-scoring ledger
+
+All three rows reuse the exact same **v4.6** FixMatch observer checkpoint and
+split. These checks establish a positive candidate signal only; they do not
+constitute a fresh integrated v4.7 training PASS.
+
+| ID | Scoring rule | Parameters | bACC | H/M/T | GM | Dead | Status |
+|---|---|---|---:|---:|---:|---:|---|
+| V47-RAW | raw EMA logits | none | 36.70 | 69.39/34.12/6.67 | 5.65 | 22 | REFERENCE |
+| V47-LA | uniform logit adjustment | alpha=0.85 | 39.42 | 67.58/39.18/11.52 | 16.11 | 7 | FROZEN-CONTROL |
+| V47-TANGS | Tail-ANchor-Gated Scores candidate | base=0.65, extra=0.25, cosine=0.75 | **40.04** | 67.45/36.94/**15.82** | **20.84** | **4** | **PROVISIONAL** |
+
+| Gate | Pass rule | Observed | Status |
+|---|---|---:|---|
+| V47-R1 | candidate vs raw bACC >= +1.0 pp | +3.34 | SIGNAL |
+| V47-R2 | candidate vs raw Tail >= +2.0 pp | +9.15 | SIGNAL |
+| V47-R3 | candidate vs raw Head >= -2.0 pp; GM >= 0; dead non-increasing | -1.94 / +15.19 / -18 | SIGNAL |
+| V47-R4 | candidate vs head-constrained LA bACC >= +0.5 pp | +0.62 | SIGNAL |
+| V47-R5 | candidate vs head-constrained LA Tail >= +2.0 pp | +4.30 | SIGNAL |
+
+Required disclosure: v4.7 is -2.24 pp on Medium versus the frozen LA control.
+The unconstrained LA sweep reached 41.30 bACC at alpha=1.55 but Head fell to
+63.27, outside the two-point preservation guard. The v4.7 claim is therefore
+head-constrained Pareto improvement, not unconditional LA dominance.
+
+Artifacts:
+
+- retrospective screen: `gradvax_experiments/results/second_try_2026-08-15/v47-development-selection.json` (`PROVISIONAL`, 250k forbidden);
+- exploratory sweeps: observer run's `exploratory_prior_shift.json` and
+  `exploratory_anchor_gated_prior.json`;
+- implementation: `gradvax_experiments/tangs/calibration.py`;
+- local smoke: `gradvax_experiments/results/v47-local-smoke-v3-c100-seed0`.
+
+### 0A.3 Code and integrity
+
+| ID | Check | Status | Evidence / next action |
+|---|---|---|---|
+| V47-CODE | frozen scorer, config, trainer integration, raw/adjusted reporting | DONE | `calibration.py`, `metrics.py`, `trainer.py`, config version 4.7 |
+| V47-LOCAL-TEST | complete suite | DONE | 58/58 PASS in 4.56 s; RTX 4060 environment |
+| V47-LOCAL-SMOKE | five-step CUDA integration | DONE | config `d0bfeac1...111e75`; zero modifications; raw/LA/adjusted summaries finite |
+| V47-SERVER-TEST | repeat suite on target | TODO | must pass before paid run |
+| V47-SERVER-SMOKE | five-step CUDA + resume on deployed v4.7 | TODO | must pass before fresh 50k development |
+| V47-INTEGRATED-50K | fresh C100 v4.7 development run and machine gate | TODO | `run_v47_development.sh`; only this run may issue development PASS/STOP |
+| V47-INDEPENDENT-AUDIT | different model family reads code and raw artifacts | TODO | required before paper claim |
+
+### 0A.4 Single-GPU run ledger
+
+| Order | Run ID | Protocol | Steps | Status | Authorization |
+|---:|---|---|---:|---|---|
+| 1 | `v47-dev-c100-100-integrated-seed0` | P-C100-100 development | 50,000 | READY-AFTER-SERVER-SMOKE | only PROVISIONAL screen + valid server smoke authorize this row |
+| 2 | `v47-confirm-c100-100-seed0` | P-C100-100 | 250,000 | BLOCKED | only after fresh integrated 50k PASS |
+| 3 | `v47-confirm-c10-100-seed0` | P-C10-100 | 250,000 | BLOCKED | required after C100 confirmatory PASS |
+| 4 | `v47-confirm-stl10-20-seed0` | P-STL10-20 | 250,000 | BLOCKED | required after C100 confirmatory PASS |
+
+No separate FixMatch or LA training run is permitted. The fresh 50k gate uses
+the same numerical thresholds as retrospective signals R1-R5 and additionally
+checks integrated code, split role, 50k completion, frozen parameters, and
+zero gradient writes. The C100 final gate repeats those efficacy checks on the
+official test result and adds 250k/hash/config checks. Parameters are
+immutable. A failed 50k gate stops rows 2-4; a failed C100 confirmatory gate
+stops rows 3-4. C100 is only the stop-loss-first dataset. The required paper
+matrix still includes C10 and STL10-20; P-STL10-10 is optional afterward.
+
+---
+
+## 0. v4.6 Recovery Dashboard (Historical)
 
 Conflicting v4.5 rows later in this tracker are historical and cannot
 authorize execution. `tangs` remains the archived method identity; current
@@ -105,10 +185,10 @@ No row may be marked DONE without a raw artifact path and config hash.
 
 | Item | Required value | Status | Evidence |
 |---|---|---|---|
-| Proposal version | 4.6 | DONE | refine-logs/FINAL_PROPOSAL.md |
-| Plan version | 4.6 | DONE | refine-logs/EXPERIMENT_PLAN.md |
-| Tracker version | 4.6 | DONE | this file |
-| Reported-results recovery policy | 4.6 | DONE | gradvax_experiments/reported_results_from_papers.md |
+| Proposal version | 4.7 | DONE | refine-logs/FINAL_PROPOSAL.md |
+| Plan version | 4.7 | DONE | refine-logs/EXPERIMENT_PLAN.md |
+| Tracker version | 4.7 | DONE | this file |
+| Reported-results recovery policy | 4.7 | DONE | gradvax_experiments/reported_results_from_papers.md |
 | Paper-facing method name | TANGS | DONE | all v4.5 files |
 | Upstream implementation substrate | clean official `LeeHyuck/CDMAD` snapshot | DONE | commit `7cd732b4615b9d94934a9197e69c6775496fb5ee` |
 | Exact venue and year | TBD | BLOCKED | venue URL required |

@@ -113,6 +113,26 @@ class TailRowV46Tests(unittest.TestCase):
         self.assertEqual(result.stats["tailrow_valid_anchor_rows"], 1)
         torch.testing.assert_close(result.gradient, base)
 
+    def test_v47_collects_anchors_without_changing_gradient(self):
+        from tangs.surgery import TailRowController
+
+        controller = TailRowController(
+            "tangs-v47",
+            num_classes=2,
+            feature_dim=1,
+            tail_classes=[1],
+            warmup_steps=0,
+        )
+        base = torch.tensor([1.0, 2.0, 3.0, 4.0])
+        rows = torch.tensor([[2.0, 0.0]])
+        self_row = torch.tensor([[-1.0, 0.0]])
+        result = controller.transform(
+            base, rows, self_row, self_row, torch.tensor([True]), step=1
+        )
+        self.assertFalse(result.applied)
+        self.assertEqual(result.reason, "observer-only")
+        torch.testing.assert_close(result.gradient, base)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -19,6 +19,7 @@ import torch
 import torch.nn.functional as F
 
 from .artifacts import append_jsonl, atomic_json
+from .calibration import anchor_gated_logits
 from .config import (
     ORACLE_METHODS,
     TAILROW_METHODS,
@@ -308,6 +309,12 @@ class Trainer:
             alpha=config.ema_decay,
         )
         self.classifier_parameters = list(self.model.output.parameters())
+        self.use_score_correction = config.method == "tangs-v47"
+        self.labeled_counts = torch.tensor(
+            data.split_manifest["labeled_counts"],
+            dtype=torch.float32,
+            device=self.device,
+        )
         self.use_tailrow = (
             config.method in TAILROW_METHODS or config.tailrow_observer
         )
@@ -344,6 +351,33 @@ class Trainer:
         self._assert_source_parity()
         if config.resume:
             self._resume(config.resume)
+
+    def _score_transform(
+        self, logits: torch.Tensor, features: torch.Tensor
+    ) -> torch.Tensor:
+        if not self.use_score_correction:
+            return logits
+        if not isinstance(self.controller, TailRowController):
+            raise TypeError("TANGS v4.7 requires the classwise tail-anchor controller.")
+        return anchor_gated_logits(
+            logits,
+            features,
+            self.labeled_counts,
+            self.data.partition["tail"],
+            self.controller.class_anchors,
+            self.controller.class_anchor_valid,
+            base_alpha=self.config.score_base_alpha,
+            extra_tail_alpha=self.config.score_extra_tail_alpha,
+            anchor_threshold=self.config.score_anchor_threshold,
+            eps=self.config.geometry_eps,
+        )
+
+    def _uniform_la_transform(
+        self, logits: torch.Tensor, _features: torch.Tensor
+    ) -> torch.Tensor:
+        counts = self.labeled_counts.to(dtype=logits.dtype)
+        log_prior = (counts / counts.sum()).log()
+        return logits - self.config.score_uniform_la_alpha * log_prior.unsqueeze(0)
 
     def _assert_source_parity(self) -> None:
         for module in self.model.modules():
@@ -898,6 +932,9 @@ class Trainer:
                             self.data.partition,
                             self.config.protocol.num_classes,
                             self.device,
+                            self._score_transform
+                            if self.use_score_correction
+                            else None,
                         )
                         metrics["step"] = step
                         self.development_evaluations.append(metrics)
@@ -919,12 +956,36 @@ class Trainer:
 
         signal.signal(signal.SIGTERM, previous_sigterm_handler)
 
-        final_metrics = evaluate_classifier(
+        raw_final_metrics = evaluate_classifier(
             self.ema_model,
             self.data.evaluation_loader,
             self.data.partition,
             self.config.protocol.num_classes,
             self.device,
+        )
+        final_metrics = (
+            evaluate_classifier(
+                self.ema_model,
+                self.data.evaluation_loader,
+                self.data.partition,
+                self.config.protocol.num_classes,
+                self.device,
+                self._score_transform,
+            )
+            if self.use_score_correction
+            else raw_final_metrics
+        )
+        uniform_la_metrics = (
+            evaluate_classifier(
+                self.ema_model,
+                self.data.evaluation_loader,
+                self.data.partition,
+                self.config.protocol.num_classes,
+                self.device,
+                self._uniform_la_transform,
+            )
+            if self.use_score_correction
+            else None
         )
         pseudo_metrics = None
         if self.data.pseudo_evaluation_loader is not None:
@@ -935,6 +996,20 @@ class Trainer:
                 self.config.protocol.num_classes,
                 self.config.confidence_threshold,
                 self.device,
+            )
+        adjusted_pseudo_metrics = None
+        if (
+            self.use_score_correction
+            and self.data.pseudo_evaluation_loader is not None
+        ):
+            adjusted_pseudo_metrics = evaluate_pseudo_labels(
+                self.ema_model,
+                self.data.pseudo_evaluation_loader,
+                self.data.partition,
+                self.config.protocol.num_classes,
+                self.config.confidence_threshold,
+                self.device,
+                self._score_transform,
             )
         elapsed = time.perf_counter() - started
         diagnostic_summary = self.diagnostics.summary(self.config.tangs_tau)
@@ -953,7 +1028,12 @@ class Trainer:
             "evaluation_model": "EMA",
             "checkpoint_selection": "final-only",
             "performance": final_metrics,
+            "raw_performance": raw_final_metrics
+            if self.use_score_correction
+            else None,
+            "uniform_logit_adjustment_performance": uniform_la_metrics,
             "pseudo_labels": pseudo_metrics,
+            "adjusted_pseudo_labels": adjusted_pseudo_metrics,
             "development_evaluations": self.development_evaluations,
             "runtime": {
                 "elapsed_seconds_this_process": elapsed,

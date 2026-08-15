@@ -1,7 +1,7 @@
 # Reported Results From Primary Papers
 
-*Specification version: 4.6 recovery policy — literature registry unchanged, local comparison policy strengthened*
-*Aligned with the TANGS v4.6 proposal, plan, and tracker.*
+*Specification version: 4.7 score-calibration policy — literature registry unchanged, local post-hoc controls strengthened*
+*Aligned with the TANGS v4.7 proposal, plan, and tracker.*
 *Purpose: preserve audited paper-reported numbers used as citation-marked baselines in the TANGS main comparison table. Local development status may be noted only to track what remains; it is never a source for a reported-baseline row.*
 
 ## Evidence and Citation Rules
@@ -22,7 +22,50 @@ Any source-registry row containing `[VERIFY]` is quarantined: its retained numer
 
 The repository currently does not contain the source PDFs represented by the old aliases paper1–paper5. The official URLs below are therefore the traceable sources; if local PDFs are added later, record their paths and SHA256 values.
 
-### v4.6 Local-Baseline Policy (Controlling)
+### v4.7 Local-Comparison Policy (Controlling)
+
+TANGS v4.7 is a deterministic score-calibration method, not a training-gradient
+method. The v4.5 and v4.6 gradient-surgery results remain archived failures and
+must never be relabeled as v4.7 evidence.
+
+The core local comparison uses one exact FixMatch training run with a
+measurement-only anchor observer. Its final EMA checkpoint supplies three
+scoring rows: raw logits, uniform logit adjustment, and TANGS v4.7. Therefore:
+
+- these rows are paired without training stochasticity and must not be
+  described as three independent runs;
+- the frozen uniform-LA control is `alpha=0.85`, selected on the disjoint C100
+  development set under the same maximum-two-point Head-loss guard;
+- the v4.7 constants are base `0.65`, extra tail `0.25`, and cosine threshold
+  `0.75`; they cannot change after confirmatory evaluation;
+- retrospective old-checkpoint values (raw 36.70, LA 39.42, v4.7 candidate
+  40.04 bACC) are PROVISIONAL only and never enter the paper main table as
+  confirmatory results; they authorize at most one fresh integrated C100 50k
+  development run;
+- the unconstrained LA development optimum (41.30 bACC at `alpha=1.55`, Head
+  63.27) remains visible in the audit record. Any v4.7-vs-LA claim must say
+  **under the registered Head-preservation constraint**;
+- v4.7 loses 2.24 Medium points to the frozen LA control in development, so a
+  selective-tail gain cannot be summarized as uniform group improvement.
+
+Published FixMatch/DARP/ABC/CReST/CoSSL/CDMAD/LCGC rows below remain
+citation-marked context, not local reproductions. Before any 250k run, a fresh
+integrated C100 50k development run must PASS the frozen gate on the held-out
+development split. A CCF-C efficacy claim then requires the frozen 250k C100,
+C10-100, and STL10-20 results, plus direct post-hoc controls such as uniform LA
+and tau-normalization/cRT-style calibration. C100 runs first as a stop-loss
+gate; it is not the complete matrix. P-STL10-10 remains optional. Do not claim
+state-of-the-art from either the retrospective PROVISIONAL signal or a 50k
+development PASS.
+
+The post-hoc prior term follows the established logit-adjustment family; that
+term alone is not novel. The proposed contribution that must be isolated is
+the one-class, supervised-tail-anchor compatibility gate. Cite the original
+logit-adjustment work when the paper bibliography is assembled, and compare
+against the local frozen LA row rather than implying that prior correction was
+invented here.
+
+### v4.6 Local-Baseline Policy (Historical)
 
 The citations and numerical values in this file remain literature context; the
 v4.6 recovery does not alter them. It does alter how efficacy is established.

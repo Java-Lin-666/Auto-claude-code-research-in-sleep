@@ -1,5 +1,8 @@
 # TANGS v4.6 交接方案（2026-08-14）
 
+> **历史文件：** v4.6 后续完成五个开发实验并触发 STOP。不要再按本文
+> 启动实验；请改读 `refine-logs/HANDOFF_TANGS_V47_2026-08-15.md`。
+
 这份文件是新聊天窗口的首要入口。接手 AI 应先完整阅读本文，再读取：
 
 1. `refine-logs/FINAL_PROPOSAL.md`

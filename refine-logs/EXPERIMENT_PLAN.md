@@ -1,12 +1,107 @@
 # TANGS Experiment Plan
 
-*Specification version: 4.6 — classwise tail-row recovery plan*
-*Aligned with FINAL_PROPOSAL.md v4.6 and EXPERIMENT_TRACKER.md v4.6*
-*Status: v4.6 code, the full local PyTorch suite (53/53 PASS in `C:\lintao\envs\fixmatch`), and the target-server CUDA smoke are complete. The five sequential 50k C100 development runs are READY/TODO and unstarted. Every 250k v4.6 run is BLOCKED.*
+*Specification version: 4.7 — tail-anchor-gated score correction plan*
+*Aligned with FINAL_PROPOSAL.md v4.7 and EXPERIMENT_TRACKER.md v4.7*
+*Status: v4.6 is STOP. Old-checkpoint v4.7 rescoring is PROVISIONAL only; 58/58 local tests pass and the local CUDA integration smoke is DONE. The next paid job is a fresh target-server C100 50k integrated development run. No 250k job is authorized until it passes. The required full matrix is C100, C10, and STL10-20, run serially on the single GPU.*
 
 ---
 
-## 0. v4.6 Recovery Execution Plan (Controlling)
+## 0A. v4.7 Execution Plan (Controlling)
+
+This section supersedes conflicting v4.5/v4.6 execution rules below. The
+retrospective rescoring of an unchanged completed v4.6 FixMatch observer
+checkpoint selects a candidate only. A fresh integrated v4.7 50k development
+run is mandatory before any confirmatory training.
+
+### 0A.1 Frozen method and controls
+
+- Training objective: exact unmodified FixMatch; the classwise observer stores
+  supervised tail self-row EMA anchors but never writes a gradient.
+- TANGS v4.7 scoring: global labeled-prior adjustment `alpha=0.65`; one extra
+  compatible-tail adjustment `delta=0.25`; cosine threshold `kappa=0.75`.
+- Direct control: uniform logit adjustment with `alpha=0.85`, selected by the
+  same maximum-two-point Head-loss guard.
+- Raw FixMatch, uniform LA, and v4.7 must reuse the same final EMA model,
+  anchors, split, and checkpoint. They are scoring rows, not separate training
+  runs.
+- The unconstrained LA optimum (`alpha=1.55`, 41.30 bACC, 63.27 Head) is kept
+  in the audit record but is not the head-preserving control.
+
+### 0A.2 Retrospective candidate screen — PROVISIONAL
+
+Source checkpoint:
+`results/second_try_2026-08-15/v46-dev-c100-100-fixmatch-observer-seed0/checkpoint_last.pt`.
+Evaluation uses the existing balanced/disjoint 5,000-image C100 development
+set and never the official test split.
+
+| Rule | bACC | Head | Medium | Tail | GM | Dead | Status |
+|---|---:|---:|---:|---:|---:|---:|---|
+| Raw FixMatch | 36.70 | 69.39 | 34.12 | 6.67 | 5.65 | 22 | reference |
+| Uniform LA, alpha=0.85 | 39.42 | 67.58 | 39.18 | 11.52 | 16.11 | 7 | control frozen |
+| TANGS v4.7 candidate | 40.04 | 67.45 | 36.94 | 15.82 | 20.84 | 4 | **PROVISIONAL** |
+
+Machine-readable artifact:
+`results/second_try_2026-08-15/v47-development-selection.json`. Its required
+state is `PROVISIONAL`, `allow_integrated_50k_validation=true`, and every 250k
+authorization field is false. It is not a fresh v4.7 run and not paper evidence.
+
+### 0A.3 Integrity before paid compute
+
+Completed locally:
+
+- `python -m pytest -q`: 58 passed in 4.56 seconds;
+- five-step RTX 4060 smoke: `results/v47-local-smoke-v3-c100-seed0`, config
+  `d0bfeac13b185468083c5d352c47b2ac6f0b435048081d5b7882f8b61d111e75`;
+- smoke gradient modifications: 0/5; reasons: `observer-only` x5;
+- raw, uniform-LA, and adjusted final summaries plus raw/adjusted pseudo-label
+  summaries are present and finite.
+
+Required on the target RTX 4090 before paid development: repeat all 58 tests
+and a five-step `tangs-v47` CUDA smoke, including checkpoint/resume if
+deployment code or environment differs from the prior v4.6 commit. Then run
+`scripts/run_v47_development.sh`, which performs one fresh integrated C100 50k
+job and writes `results/v47-integrated-development-gate.json`.
+
+### 0A.4 Single-GPU gated queue
+
+The only job authorized by a successful target smoke plus the PROVISIONAL
+screen is row 1. Rows 2-4 remain blocked until their preceding machine-readable
+gate passes:
+
+| Order | Run ID | Protocol | Method | Steps | Status |
+|---:|---|---|---|---:|---|
+| 1 | `v47-dev-c100-100-integrated-seed0` | P-C100-100 development | `tangs-v47` integrated validation | 50,000 | READY-AFTER-SERVER-SMOKE |
+| 2 | `v47-confirm-c100-100-seed0` | P-C100-100 | frozen `tangs-v47` | 250,000 | BLOCKED-UNTIL-50K-PASS |
+| 3 | `v47-confirm-c10-100-seed0` | P-C10-100 | frozen C100-selected `tangs-v47` | 250,000 | BLOCKED-UNTIL-C100-250K-PASS |
+| 4 | `v47-confirm-stl10-20-seed0` | P-STL10-20 | frozen C100-selected `tangs-v47` | 250,000 | BLOCKED-UNTIL-C100-250K-PASS |
+
+Every final checkpoint yields raw FixMatch, uniform LA, and v4.7 rows. Do not
+launch separate baseline jobs. Use final EMA only; do not select a test
+checkpoint or retune any scoring constant. C100 is first to avoid wasting the
+single GPU if the core claim fails; it is not the only dataset. C10 and
+STL10-20 are required after C100 PASS. P-STL10-10 is optional and is scheduled
+only after these required rows.
+
+Confirmatory PASS requires every check:
+
+1. v4.7 vs raw: bACC >= +1.0 pp;
+2. v4.7 vs raw: Tail >= +2.0 pp;
+3. v4.7 vs raw: Head >= -2.0 pp;
+4. v4.7 vs raw: GM non-decreasing and dead classes non-increasing;
+5. v4.7 vs uniform LA: bACC >= +0.5 pp and Tail >= +2.0 pp;
+6. all artifacts, frozen parameters, hashes, and zero-gradient-modification
+   invariants pass audit.
+
+A 50k STOP blocks all 250k spending. A C100 250k STOP blocks cross-dataset
+spending and changes the paper to a negative
+mechanism study or ends it. A PASS authorizes, sequentially, C10-100 and
+STL10-20 transfer with the C100-frozen constants, then direct post-hoc controls
+including tau-normalization/cRT-style calibration. Strong LTSSL methods remain
+citation-marked context unless separately and exactly reproduced.
+
+---
+
+## 0. v4.6 Recovery Execution Plan (Historical)
 
 This section supersedes conflicting v4.5 definitions and schedules later in
 the file. Those sections remain as the preregistration and audit history of the

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+from collections.abc import Callable
 from typing import Any
 
 import torch
@@ -24,6 +25,8 @@ def evaluate_classifier(
     partition: dict[str, list[int]],
     num_classes: int,
     device: torch.device,
+    logit_transform: Callable[[torch.Tensor, torch.Tensor], torch.Tensor]
+    | None = None,
 ) -> dict[str, Any]:
     model.eval()
     correct = torch.zeros(num_classes, dtype=torch.float64)
@@ -33,7 +36,11 @@ def evaluate_classifier(
     for images, labels, _ in loader:
         images = images.to(device, non_blocking=True)
         labels = labels.to(device, non_blocking=True)
-        logits, _ = model(images)
+        if logit_transform is None:
+            logits, _ = model(images)
+        else:
+            logits, _, features = model(images, return_feature=True)
+            logits = logit_transform(logits, features)
         predictions = logits.argmax(dim=1)
         total_correct += int((predictions == labels).sum())
         total_seen += labels.numel()
@@ -75,6 +82,8 @@ def evaluate_pseudo_labels(
     num_classes: int,
     threshold: float,
     device: torch.device,
+    logit_transform: Callable[[torch.Tensor, torch.Tensor], torch.Tensor]
+    | None = None,
 ) -> dict[str, Any]:
     model.eval()
     lookup = _group_lookup(partition)
@@ -97,7 +106,11 @@ def evaluate_pseudo_labels(
             continue
         images = images[known].to(device, non_blocking=True)
         labels = labels[known].to(device, non_blocking=True)
-        logits, _ = model(images)
+        if logit_transform is None:
+            logits, _ = model(images)
+        else:
+            logits, _, features = model(images, return_feature=True)
+            logits = logit_transform(logits, features)
         probabilities = F.softmax(logits, dim=1)
         confidence, predictions = probabilities.max(dim=1)
         accepted = confidence >= threshold

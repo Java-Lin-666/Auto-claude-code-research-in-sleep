@@ -8,7 +8,7 @@ from typing import Any
 
 
 CDMAD_COMMIT = "7cd732b4615b9d94934a9197e69c6775496fb5ee"
-CONFIG_VERSION = "4.6"
+CONFIG_VERSION = "4.7"
 
 
 @dataclass(frozen=True)
@@ -79,6 +79,7 @@ METHODS = {
     "tailrow-group",
     "tailrow-classwise",
     "tangs-v46",
+    "tangs-v47",
     "oracle-fixmatch",
     "oracle-tangs",
     "oracle-tangs-v46",
@@ -95,6 +96,7 @@ TAILROW_METHODS = {
     "tailrow-group",
     "tailrow-classwise",
     "tangs-v46",
+    "tangs-v47",
     "oracle-tangs-v46",
 }
 
@@ -137,6 +139,10 @@ class RunConfig:
     tangs_beta: float
     tangs_tau: float
     tangs_correction_rho: float
+    score_uniform_la_alpha: float
+    score_base_alpha: float
+    score_extra_tail_alpha: float
+    score_anchor_threshold: float
     tailrow_observer: bool
     tangs_warmup_steps: int
     min_tail_support: int
@@ -163,13 +169,25 @@ def build_run_config(args: Any) -> RunConfig:
     if args.mode not in {"confirmatory", "development", "smoke"}:
         raise ValueError(f"Unknown mode: {args.mode}")
     if args.amp:
-        raise ValueError("AMP is forbidden by protocol v4.6; geometry and training are FP32.")
+        raise ValueError("AMP is forbidden by protocol; geometry and training are FP32.")
 
     if math.isnan(args.tangs_tau) or args.tangs_tau <= 0:
         raise ValueError("--tangs-tau must be positive or inf.")
     correction_rho = float(getattr(args, "tangs_correction_rho", 1.0))
     if math.isnan(correction_rho) or correction_rho <= 0:
         raise ValueError("--tangs-correction-rho must be positive or inf.")
+    score_uniform_la_alpha = float(getattr(args, "score_uniform_la_alpha", 0.85))
+    score_base_alpha = float(getattr(args, "score_base_alpha", 0.65))
+    score_extra_tail_alpha = float(getattr(args, "score_extra_tail_alpha", 0.25))
+    score_anchor_threshold = float(getattr(args, "score_anchor_threshold", 0.75))
+    if not math.isfinite(score_uniform_la_alpha) or score_uniform_la_alpha < 0:
+        raise ValueError("--score-uniform-la-alpha must be finite and non-negative.")
+    if not math.isfinite(score_base_alpha) or score_base_alpha < 0:
+        raise ValueError("--score-base-alpha must be finite and non-negative.")
+    if not math.isfinite(score_extra_tail_alpha) or score_extra_tail_alpha < 0:
+        raise ValueError("--score-extra-tail-alpha must be finite and non-negative.")
+    if not -1.0 <= score_anchor_threshold <= 1.0:
+        raise ValueError("--score-anchor-threshold must be in [-1, 1].")
     protocol = PROTOCOLS[args.protocol]
     deviations: list[str] = []
 
@@ -234,6 +252,10 @@ def build_run_config(args: Any) -> RunConfig:
         tangs_beta=0.99,
         tangs_tau=args.tangs_tau,
         tangs_correction_rho=correction_rho,
+        score_uniform_la_alpha=score_uniform_la_alpha,
+        score_base_alpha=score_base_alpha,
+        score_extra_tail_alpha=score_extra_tail_alpha,
+        score_anchor_threshold=score_anchor_threshold,
         tailrow_observer=bool(getattr(args, "tailrow_observer", False)),
         tangs_warmup_steps=2500,
         min_tail_support=2,

@@ -1,8 +1,120 @@
-# TANGS: Tail-Anchored Norm-Aware Gradient Surgery for Long-Tailed Semi-Supervised Learning
+# TANGS v4.7: Tail-ANchor-Gated Scores for Long-Tailed Semi-Supervised Learning
 
-*Specification version: 4.6 — classwise tail-row recovery after the v4.5 first matrix*
-*Status: the v4.5 C10/C100 results are archived evidence, not support for the current method. The v4.6 implementation, complete local test suite (53/53 PASS), and target-server CUDA smoke are complete; the fixed five-run C100 development gate is ready but not started. No v4.6 confirmatory run is authorized.*
-*Legacy working name: GradVax. The paper-facing name is TANGS to avoid confusion with Gradient Vaccine (GradVac, ICLR 2021).*
+*Specification version: 4.7 — score-calibration pivot after the v4.6 STOP gate*
+*Status: v4.6 gradient surgery is rejected. Retrospective rescoring of the old v4.6 observer checkpoint is PROVISIONAL candidate evidence only, not a v4.7 PASS. The complete local suite passes 58/58 and the local five-step CUDA integration smoke is DONE. A fresh target-server v4.7 C100 50k development run is required before any 250k run. After that true gate passes, the required single-GPU matrix is C100, C10, and STL10-20 at 250k steps each.*
+*Legacy working name: GradVax. In v4.7, TANGS expands to Tail-ANchor-Gated Scores; v4.5/v4.6 keep their archived gradient-surgery identities.*
+
+---
+
+## Controlling v4.7 Pivot (2026-08-15)
+
+This section supersedes every conflicting method, claim, and launch rule below.
+The v4.5 and v4.6 sections remain immutable failure-analysis records.
+
+### Why gradient surgery is abandoned
+
+The five matched P-C100-100 development runs ended with a v4.6 STOP. The
+measurement-only FixMatch observer obtained 36.70 bACC, whereas full v4.6
+obtained 35.88 (-0.82 point) and did not improve tail accuracy. More
+importantly, the observer found 1,589,275 conflicts among 1,589,275 eligible
+tail rows (100%) with mean cosine -0.827. Full v4.6 modified 47,414 of 50,000
+steps. This is a structural degeneracy: for cross-entropy, a correctly labeled
+head example normally gives a positive non-target tail-row derivative, while a
+tail self-class example gives a negative target-row derivative. Their negative
+dot product is therefore usually normal class competition, not evidence of a
+harmful optimization event. Tuning beta, tau, rho, support, or warm-up cannot
+repair a trigger whose semantics are wrong.
+
+The same checkpoint shows that tail pseudo-labels are already reliable:
+98.08% precision, 32.59% recall, and 47.92% coverage. The failure is therefore
+better explained by decision-prior bias than by unusable tail representation
+or widespread tail pseudo-label noise.
+
+### v4.7 method
+
+TANGS v4.7 never edits a training gradient. Training is exact FixMatch plus a
+measurement-only classwise tail-anchor observer. For classifier `z = W f + b`,
+let `a_c` be the EMA supervised self-row gradient for tail class `c`. Because
+its weight coordinates are proportional to `-(1-p_c) f`, define the tail
+feature direction
+
+\[
+r_c = \operatorname{normalize}(-a_{c,W}).
+\]
+
+Given labeled prior `pi_c`, apply the frozen base logit adjustment
+
+\[
+\tilde z_c = z_c - 0.65\log \pi_c.
+\]
+
+For each example, find
+
+\[
+c^*(x)=\arg\max_{c\in T}\cos(f(x),r_c).
+\]
+
+If the winning cosine is at least 0.75, add one and only one tail correction:
+
+\[
+\tilde z_{c^*}\leftarrow \tilde z_{c^*}
++0.25[-\log\pi_{c^*}].
+\]
+
+Invalid or missing anchors receive no extra correction; the global prior term
+still applies. The official method constants are therefore `(0.65, 0.25,
+0.75)`. They are frozen from the disjoint 5,000-image C100 development set and
+must not be changed after any confirmatory-test evaluation.
+
+### Retrospective candidate evidence and claim ceiling
+
+All rows below reuse one unchanged step-50k **v4.6** FixMatch observer
+checkpoint and differ only in deterministic scoring. They motivated v4.7 but
+do not validate the integrated v4.7 training-and-observer path:
+
+| Scoring rule | bACC | Head | Medium | Tail | GM | Dead classes |
+|---|---:|---:|---:|---:|---:|---:|
+| Raw FixMatch | 36.70 | 69.39 | 34.12 | 6.67 | 5.65 | 22 |
+| Uniform logit adjustment, alpha=0.85 | 39.42 | 67.58 | 39.18 | 11.52 | 16.11 | 7 |
+| TANGS v4.7 | **40.04** | 67.45 | 36.94 | **15.82** | **20.84** | **4** |
+
+Relative to raw FixMatch, v4.7 gains 3.34 bACC and 9.15 tail points while the
+head loss is 1.94 points. Relative to uniform logit adjustment under the same
+two-point head-loss guard, it gains 0.62 bACC, 4.30 tail points, and 4.73 GM
+points, with three fewer dead classes. It loses 2.24 medium points, which must
+be reported rather than hidden.
+
+An unconstrained uniform-logit sweep reached 41.30 bACC at alpha=1.55 but
+reduced Head to 63.27. Thus the supported v4.7 claim is Pareto improvement
+under the preregistered head-preservation constraint, not unconditional
+dominance over logit adjustment or state-of-the-art LTSSL.
+
+The retrospective artifact is
+`gradvax_experiments/results/second_try_2026-08-15/v47-development-selection.json`
+(`status=PROVISIONAL`; it explicitly forbids 250k). The implementation is
+`tangs/calibration.py`; the full local
+suite passes 58 tests, and `results/v47-local-smoke-v3-c100-seed0` completed
+five CUDA steps with zero gradient modifications and finite raw/LA/adjusted
+summaries.
+
+### Next evidence gate
+
+First run one fresh P-C100-100 50k `tangs-v47` development job on the target
+server after its CUDA smoke. Only `scripts/analyze_v47_integrated_development.py`
+may issue the real development `PASS`; it verifies the integrated method,
+50,000 steps, held-out 5,000-image development split, frozen constants, paired
+raw/LA/v4.7 summaries, and zero gradient modifications. The efficacy rules are
+v4.7 vs raw bACC >= +1.0, Tail >= +2.0, Head >= -2.0, GM >= 0, dead classes
+non-increasing; and v4.7 vs uniform LA bACC >= +0.5 and Tail >= +2.0.
+
+If that 50k gate passes, the single GPU runs three frozen 250k jobs in order:
+P-C100-100, P-C10-100, and P-STL10-20. Each one trains a single exact FixMatch
+model while collecting anchors; its final EMA checkpoint supplies raw FixMatch,
+uniform LA (`alpha=0.85`), and TANGS v4.7 scores without separate baseline
+training. C100 is first only as a stop-loss gate: if its confirmatory criteria
+fail, C10/STL spending stops. If C100 passes, C10 and STL10-20 are required,
+not optional. P-STL10-10 remains an optional extension after the required
+three-dataset matrix.
 
 ---
 
@@ -18,7 +130,7 @@ The earlier timing-missed interruption artifact is deliberately retained at `/ro
 
 ---
 
-## Controlling v4.6 Revision (2026-08-14)
+## Historical v4.6 Revision (2026-08-14)
 
 This section supersedes every conflicting v4.5 method, tuning, scheduling, and
 launch rule later in this document. The older text remains only as an auditable

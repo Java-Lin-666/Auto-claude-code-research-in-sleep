@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Server entry point for the locked v4.6 FixMatch/TANGS experiments."""
+"""Server entry point for the locked FixMatch/TANGS experiments."""
 
 from __future__ import annotations
 
@@ -59,6 +59,30 @@ def parse_args() -> argparse.Namespace:
         help="Measure v4.6 tail-row geometry without changing the gradient.",
     )
     parser.add_argument(
+        "--score-uniform-la-alpha",
+        type=float,
+        default=0.85,
+        help="v4.7 frozen uniform-logit-adjustment control strength.",
+    )
+    parser.add_argument(
+        "--score-base-alpha",
+        type=float,
+        default=0.65,
+        help="v4.7 global labeled-prior correction strength.",
+    )
+    parser.add_argument(
+        "--score-extra-tail-alpha",
+        type=float,
+        default=0.25,
+        help="v4.7 extra correction for the single anchor-compatible tail class.",
+    )
+    parser.add_argument(
+        "--score-anchor-threshold",
+        type=float,
+        default=0.75,
+        help="v4.7 minimum cosine for the extra tail correction.",
+    )
+    parser.add_argument(
         "--head-weight",
         type=float,
         default=0.5,
@@ -92,7 +116,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--amp",
         action="store_true",
-        help="Rejected by v4.6; present so accidental AMP requests fail clearly.",
+        help="Rejected by protocol; present so accidental AMP requests fail clearly.",
     )
     args = parser.parse_args()
     if args.log_every <= 0 or args.checkpoint_every <= 0 or args.snapshot_every <= 0:
